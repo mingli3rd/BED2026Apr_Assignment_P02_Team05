@@ -1,0 +1,138 @@
+regi<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Your Stall — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <!-- ===================== DIRECTORY BOARD NAV ===================== -->
+  <header class="directory-board">
+    <div class="board-inner">
+      <a href="index.html" class="board-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="board-nav" aria-label="Main navigation">
+        <a href="index.html" class="board-link"><span class="stall-no">01</span>Home</a>
+        <a href="stalls.html" class="board-link"><span class="stall-no">02</span>Find Stalls</a>
+        <a href="menu.html" class="board-link"><span class="stall-no">03</span>Order</a>
+        <a href="vendor-register.html" class="board-link is-active"><span class="stall-no">04</span>Vendor Sign Up</a>
+        <a href="hygiene.html" class="board-link"><span class="stall-no">05</span>Hygiene Grades</a>
+        <a href="credit.html" class="board-link"><span class="stall-no">06</span>Credits</a>
+      </nav>
+
+      <button class="board-menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== REGISTER SECTION ===================== -->
+  <main>
+    <section class="register-section">
+      <div class="register-inner">
+
+        <div class="register-intro">
+          <p class="eyebrow">Vendor Sign Up</p>
+          <h1 class="register-title">Get your<br />stall online.</h1>
+          <p class="register-sub">
+            Set up your vendor account to manage your menu, take orders,
+            and track your stall's performance — all from one dashboard.
+            Approval is simulated on behalf of NEA and your hawker centre
+            operator.
+          </p>
+
+          <div class="register-note">
+            <span class="register-note-label">Before you start</span>
+            <p>You'll need your business email, contact number, and your assigned hawker centre and stall number.</p>
+          </div>
+        </div>
+
+        <!-- SIGNATURE: registration card styled like a stall permit -->
+        <div class="permit-card">
+          <div class="permit-header">
+            <span>STALL OPERATOR PERMIT</span>
+            <span class="permit-status" id="permitStatus">PENDING</span>
+          </div>
+
+          <form id="vendorRegisterForm" class="permit-form" novalidate>
+            <div class="field">
+              <label for="businessName">Business / Stall Name</label>
+              <input type="text" id="businessName" placeholder="e.g. Ah Huat Chicken Rice" required />
+            </div>
+
+            <div class="field">
+              <label for="email">Business Email</label>
+              <input type="email" id="email" placeholder="ahhuat@stall.com" required />
+            </div>
+
+            <div class="field">
+              <label for="phone">Contact Number</label>
+              <input type="tel" id="phone" placeholder="9123 4567" required />
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="hawkerCentreId">Hawker Centre</label>
+                <select id="hawkerCentreId" required>
+                  <option value="" disabled selected>Select centre</option>
+                  <option value="1">Tiong Bahru Market</option>
+                  <option value="2">Maxwell Food Centre</option>
+                  <option value="3">Chinatown Complex</option>
+                  <option value="4">Amoy Street Food Centre</option>
+                  <option value="5">Old Airport Road Food Centre</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="stallNumber">Stall Number</label>
+                <input type="text" id="stallNumber" placeholder="e.g. 01-08" required />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="Min. 8 characters, letters and numbers" required />
+              <span class="field-hint">At least 8 characters, with letters and numbers.</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Register Stall</button>
+
+            <p id="message" class="form-message" role="status" aria-live="polite"></p>
+          </form>
+
+          <div class="permit-perf" aria-hidden="true"></div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="board-logo-mark small">SG</span>
+        <span>HAWKER HUB</span>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="stalls.html">Find Stalls</a>
+        <a href="vendor-register.html">Vendor Sign Up</a>
+        <a href="credit.html">Credits</a>
+      </nav>
+      <p class="footer-note">Built for BED Assignment · Diploma in Information Technology · Ngee Ann Polytechnic</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/vendor-register.js"></script>
+</body>
+</html>

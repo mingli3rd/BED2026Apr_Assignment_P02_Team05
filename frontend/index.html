@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SG Hawker Hub — Find, Order, Support Local Stalls</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <!-- ===================== DIRECTORY BOARD NAV ===================== -->
+  <header class="directory-board">
+    <div class="board-inner">
+      <a href="index.html" class="board-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="board-nav" aria-label="Main navigation">
+        <a href="index.html" class="board-link is-active"><span class="stall-no">01</span>Home</a>
+        <a href="stalls.html" class="board-link"><span class="stall-no">02</span>Find Stalls</a>
+        <a href="menu.html" class="board-link"><span class="stall-no">03</span>Order</a>
+        <a href="vendor-register.html" class="board-link"><span class="stall-no">04</span>Vendor Sign Up</a>
+        <a href="hygiene.html" class="board-link"><span class="stall-no">05</span>Hygiene Grades</a>
+        <a href="credit.html" class="board-link"><span class="stall-no">06</span>Credits</a>
+      </nav>
+
+      <button class="board-menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <main>
+    <section class="hero">
+      <div class="hero-backdrop" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow">National Environment Agency · Digital Hawker Initiative</p>
+          <h1 class="hero-title">Your kopitiam,<br />now online.</h1>
+          <p class="hero-sub">
+            Browse stalls, skip the queue, and support the hawkers who keep
+            Singapore fed — one plate at a time. Real stalls, real hygiene
+            grades, real reviews from the void deck to the CBD.
+          </p>
+          <div class="hero-actions">
+            <a href="stalls.html" class="btn btn-primary">Find a Stall</a>
+            <a href="vendor-register.html" class="btn btn-ghost">I run a stall →</a>
+          </div>
+        </div>
+
+        <!-- SIGNATURE ELEMENT: live queue ticket -->
+        <div class="ticket" role="img" aria-label="Now serving queue ticket, a signature motif representing live order tracking">
+          <div class="ticket-top">
+            <span>NOW SERVING</span>
+            <span class="ticket-dot"></span>
+          </div>
+          <div class="ticket-number" id="ticketNumber">A027</div>
+          <div class="ticket-bottom">
+            <span>Tiong Bahru Market · Stall 08</span>
+          </div>
+          <div class="ticket-perf" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== STATS STRIP ===================== -->
+    <section class="stats-strip">
+      <div class="stat">
+        <span class="stat-num">120+</span>
+        <span class="stat-label">Hawker Centres Covered</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">6,000+</span>
+        <span class="stat-label">Registered Stalls</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">A–D</span>
+        <span class="stat-label">Live Hygiene Grades</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">24/7</span>
+        <span class="stat-label">Order &amp; Feedback Access</span>
+      </div>
+    </section>
+
+    <!-- ===================== FEATURE STALLS ===================== -->
+    <section class="stalls-section">
+      <p class="section-eyebrow">What's on the board</p>
+      <h2 class="section-title">Everything under one zinc roof</h2>
+
+      <div class="stall-grid">
+        <article class="stall-card">
+          <span class="stall-card-no">Stall 01</span>
+          <h3>Order &amp; Checkout</h3>
+          <p>Add items to your cart, pay online, and track your order status in real time — no more standing around waiting for your number to flash.</p>
+        </article>
+
+        <article class="stall-card">
+          <span class="stall-card-no">Stall 02</span>
+          <h3>Vendor Dashboard</h3>
+          <p>Stall owners manage menus, rental agreements, and incoming orders from one place — built for people running a business, not a spreadsheet.</p>
+        </article>
+
+        <article class="stall-card">
+          <span class="stall-card-no">Stall 03</span>
+          <h3>Ratings &amp; Feedback</h3>
+          <p>Like your favourite dishes, leave honest reviews, and flag issues directly to the stall and NEA when something's not right.</p>
+        </article>
+
+        <article class="stall-card">
+          <span class="stall-card-no">Stall 04</span>
+          <h3>Hygiene Transparency</h3>
+          <p>See a stall's current and historical hygiene grades before you order — inspection scores and remarks, straight from NEA officers.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== CTA BAND ===================== -->
+    <section class="cta-band">
+      <div class="cta-band-inner">
+        <h2>Running a stall? Get your queue online.</h2>
+        <p>Set up your vendor account in minutes and start taking orders digitally.</p>
+        <a href="vendor-register.html" class="btn btn-primary">Register Your Stall</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="board-logo-mark small">SG</span>
+        <span>HAWKER HUB</span>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="stalls.html">Find Stalls</a>
+        <a href="vendor-register.html">Vendor Sign Up</a>
+        <a href="credit.html">Credits</a>
+      </nav>
+      <p class="footer-note">Built for BED Assignment · Diploma in Information Technology · Ngee Ann Polytechnic</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

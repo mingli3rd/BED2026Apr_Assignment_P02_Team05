@@ -1,0 +1,753 @@
+/* =========================================================
+   SG HAWKER HUB — Design Tokens
+   Kopitiam signboard identity: teal tile walls, mustard
+   laminate tables, stencil signage type, queue-ticket motif.
+========================================================= */
+
+:root {
+  --teal-deep: #16332C;
+  --teal-shadow: #0E211C;
+  --teal-mid: #1F473D;
+  --mustard: #E8A33D;
+  --stool-red: #D64933;
+  --chalk: #F5F1E6;
+  --muted: #8FA69D;
+  --line: rgba(245, 241, 230, 0.14);
+
+  --font-display: 'Anton', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--teal-deep);
+  color: var(--chalk);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================
+   DIRECTORY BOARD NAV
+========================================================= */
+
+.directory-board {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: var(--teal-shadow);
+  border-bottom: 3px solid var(--mustard);
+}
+
+.board-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.board-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+}
+
+.board-logo-mark {
+  background-color: var(--mustard);
+  color: var(--teal-shadow);
+  font-size: 15px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+}
+
+.board-logo-mark.small {
+  padding: 4px 7px;
+  font-size: 13px;
+}
+
+.board-logo-text {
+  font-size: 17px;
+  color: var(--chalk);
+}
+
+.board-nav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.board-link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.stall-no {
+  color: var(--mustard);
+  font-size: 11px;
+}
+
+.board-link:hover {
+  background-color: var(--teal-mid);
+  color: var(--chalk);
+}
+
+.board-link.is-active {
+  background-color: var(--mustard);
+  color: var(--teal-shadow);
+}
+
+.board-link.is-active .stall-no {
+  color: var(--teal-shadow);
+}
+
+.board-menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.board-menu-toggle span {
+  width: 22px;
+  height: 2px;
+  background-color: var(--chalk);
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 88px 24px 96px;
+}
+
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 700px 400px at 85% 15%, rgba(232, 163, 61, 0.16), transparent),
+    repeating-linear-gradient(0deg, rgba(245,241,230,0.025) 0px, rgba(245,241,230,0.025) 1px, transparent 1px, transparent 34px),
+    repeating-linear-gradient(90deg, rgba(245,241,230,0.025) 0px, rgba(245,241,230,0.025) 1px, transparent 1px, transparent 34px);
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mustard);
+  margin: 0 0 18px;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  margin: 0 0 22px;
+  color: var(--chalk);
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 46ch;
+  margin: 0 0 34px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  padding: 14px 26px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--stool-red);
+  color: var(--chalk);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  background-color: #c23e2a;
+}
+
+.btn-ghost {
+  border: 2px solid var(--line);
+  color: var(--chalk);
+}
+
+.btn-ghost:hover {
+  border-color: var(--mustard);
+  color: var(--mustard);
+}
+
+/* --- Signature element: queue ticket --- */
+
+.ticket {
+  background-color: var(--chalk);
+  color: var(--teal-shadow);
+  border-radius: var(--radius-md);
+  padding: 22px 26px 26px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  transform: rotate(2deg);
+  position: relative;
+  max-width: 320px;
+  justify-self: center;
+}
+
+.ticket-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--teal-mid);
+  margin-bottom: 10px;
+}
+
+.ticket-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--stool-red);
+  box-shadow: 0 0 0 4px rgba(214, 73, 51, 0.18);
+}
+
+.ticket-number {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 58px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  margin: 4px 0 16px;
+}
+
+.ticket-bottom {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--teal-mid);
+  border-top: 1px dashed rgba(14, 33, 28, 0.25);
+  padding-top: 12px;
+}
+
+.ticket-perf {
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background-color: var(--teal-deep);
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+/* =========================================================
+   STATS STRIP
+========================================================= */
+
+.stats-strip {
+  background-color: var(--teal-shadow);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 32px 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stat {
+  text-align: center;
+  padding: 0 16px;
+}
+
+.stat-num {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 30px;
+  color: var(--mustard);
+}
+
+.stat-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* =========================================================
+   STALL FEATURE GRID
+========================================================= */
+
+.stalls-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 96px 24px 64px;
+}
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mustard);
+  margin: 0 0 10px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0 0 44px;
+  max-width: 20ch;
+}
+
+.stall-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.stall-card {
+  background-color: var(--teal-shadow);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--mustard);
+  border-radius: var(--radius-md);
+  padding: 26px 22px;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.stall-card:hover {
+  transform: translateY(-4px);
+  border-top-color: var(--stool-red);
+}
+
+.stall-card-no {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.stall-card h3 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 10px 0 10px;
+}
+
+.stall-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* =========================================================
+   CTA BAND
+========================================================= */
+
+.cta-band {
+  background-color: var(--mustard);
+  color: var(--teal-shadow);
+  padding: 64px 24px;
+}
+
+.cta-band-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.cta-band-inner h2 {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 4vw, 36px);
+  margin: 0 0 12px;
+}
+
+.cta-band-inner p {
+  margin: 0 0 26px;
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.cta-band .btn-primary {
+  background-color: var(--teal-shadow);
+}
+
+.cta-band .btn-primary:hover {
+  background-color: #061512;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.site-footer {
+  background-color: var(--teal-shadow);
+  border-top: 3px solid var(--mustard);
+  padding: 36px 24px;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 14px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.footer-links a:hover {
+  color: var(--mustard);
+}
+
+.footer-note {
+  width: 100%;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+/* =========================================================
+   VENDOR REGISTER PAGE
+========================================================= */
+
+.register-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 72px 24px 96px;
+}
+
+.register-inner {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 56px;
+  align-items: start;
+}
+
+.register-title {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 5vw, 56px);
+  line-height: 1.03;
+  margin: 0 0 20px;
+}
+
+.register-sub {
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 42ch;
+  margin: 0 0 28px;
+}
+
+.register-note {
+  background-color: var(--teal-shadow);
+  border-left: 3px solid var(--mustard);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  max-width: 42ch;
+}
+
+.register-note-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mustard);
+  margin-bottom: 6px;
+}
+
+.register-note p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* --- Permit card (registration form) --- */
+
+.permit-card {
+  background-color: var(--chalk);
+  color: var(--teal-shadow);
+  border-radius: var(--radius-md);
+  padding: 28px 30px 32px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  position: relative;
+}
+
+.permit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--teal-mid);
+  border-bottom: 1px dashed rgba(14, 33, 28, 0.25);
+  padding-bottom: 16px;
+  margin-bottom: 22px;
+}
+
+.permit-status {
+  background-color: var(--mustard);
+  color: var(--teal-shadow);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.04em;
+}
+
+.permit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.field label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--teal-shadow);
+}
+
+.field input,
+.field select {
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 12px 14px;
+  border: 2px solid rgba(14, 33, 28, 0.15);
+  border-radius: var(--radius-sm);
+  background-color: #fff;
+  color: var(--teal-shadow);
+  transition: border-color 0.15s ease;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: var(--mustard);
+  outline: none;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: rgba(14, 33, 28, 0.55);
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.btn-full:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.form-message {
+  min-height: 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  margin: 0;
+}
+
+.form-message.is-success {
+  color: #1f7a4d;
+}
+
+.form-message.is-warning {
+  color: #b8770f;
+}
+
+.form-message.is-error {
+  color: var(--stool-red);
+}
+
+.permit-perf {
+  position: absolute;
+  right: -8px;
+  top: 60px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--teal-deep);
+  border-radius: 50%;
+}
+
+@media (max-width: 900px) {
+  .register-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket {
+    justify-self: start;
+    transform: rotate(0deg);
+  }
+
+  .stall-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-strip {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .board-nav {
+    display: none;
+  }
+
+  .board-menu-toggle {
+    display: flex;
+  }
+
+  .board-nav.is-open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--teal-shadow);
+    border-bottom: 3px solid var(--mustard);
+    padding: 12px;
+  }
+
+  .hero {
+    padding: 56px 20px 64px;
+  }
+
+  .stall-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+}
