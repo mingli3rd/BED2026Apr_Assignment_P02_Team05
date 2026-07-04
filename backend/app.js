@@ -15,16 +15,20 @@ const { validateVendorRegister } = require("./middlewares/vendorValidation");
 const patronController = require("./controllers/patronController");
 const { validatePatronRegister } = require("./middlewares/patronValidation");
 
-// --- Auth (login/logout) ---
+// --- Auth (login/logout, shared between vendor and patron) ---
 const authController = require("./controllers/authController");
 const { validateLogin } = require("./middlewares/loginValidation");
-const { verifyVendorToken } = require("./middlewares/authMiddleware");
+const { verifyVendorToken, verifyPatronToken } = require("./middlewares/authMiddleware");
 
+// --- Stall Performance ---
 const performanceController = require("./controllers/performanceController");
 
 // --- Menu Management ---
 const menuController = require("./controllers/menuController");
 const { validateMenuItem } = require("./middlewares/menuValidation");
+
+// --- Rental Agreements ---
+const rentalController = require("./controllers/rentalController");
 
 
 // Create Express app
@@ -48,17 +52,19 @@ app.post("/api/auth/vendor/register", validateVendorRegister, vendorController.r
 // ===================== PATRON ROUTES =====================
 app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron);
 
-// ===================== AUTH ROUTES (LOGIN / LOGOUT) =====================
-app.post("/api/auth/login", validateLogin, authController.loginVendor);
+// ===================== AUTH ROUTES (LOGIN / LOGOUT — shared by vendor + patron) =====================
+app.post("/api/auth/login", validateLogin, authController.login);
 app.post("/api/auth/logout", authController.logout);
+app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor);
+app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron);
 
 // ===================== PROTECTED VENDOR ROUTES =====================
 // verifyVendorToken checks the JWT cookie before allowing access
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
-app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor);
-
-
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
+
+// ===================== PROTECTED PATRON ROUTES =====================
+app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders);
 
 // ===================== MENU MANAGEMENT ROUTES =====================
 app.get("/api/vendor/menu", verifyVendorToken, menuController.listMenuItems);
@@ -68,8 +74,7 @@ app.put("/api/vendor/menu/:id", verifyVendorToken, validateMenuItem, menuControl
 app.delete("/api/vendor/menu/:id", verifyVendorToken, menuController.deleteMenuItem);
 app.get("/api/cuisines", verifyVendorToken, menuController.listCuisines);
 
-
-const rentalController = require("./controllers/rentalController"); 
+// ===================== RENTAL AGREEMENT ROUTES =====================
 app.get("/api/vendor/rental-agreements", verifyVendorToken, rentalController.listRentalAgreements);
 
 // Start server

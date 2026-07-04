@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-shell">
+
+    <aside class="dash-sidebar">
+      <a href="index.html" class="board-logo dash-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="dash-nav" aria-label="Dashboard navigation">
+        <a href="patron-orders.html" class="dash-nav-link is-active">
+          <span class="stall-no">01</span> My Orders
+        </a>
+        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+          <span class="stall-no">02</span> Favourites
+        </a>
+        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+          <span class="stall-no">03</span> Profile
+        </a>
+      </nav>
+
+      <div class="dash-sidebar-footer">
+        <a href="index.html" class="dash-nav-link dash-back-link">← Back to Site</a>
+        <button id="logoutBtn" class="dash-logout-btn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="dash-main">
+
+      <div id="dashboardLoading" class="dashboard-loading">Loading your orders...</div>
+      <div id="dashboardError" class="form-message is-warning" style="display: none;"></div>
+
+      <div id="dashboardContent" class="dashboard-content" style="display: none;">
+
+        <div class="dash-header">
+          <div>
+            <p class="eyebrow">My Orders</p>
+            <h1 class="dash-welcome" id="welcomeMessage">Welcome back.</h1>
+          </div>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2>Order History</h2>
+          </div>
+
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Stall</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <!-- injected by JS -->
+            </tbody>
+          </table>
+
+          <div id="ordersEmptyState" class="dash-empty-state" style="display: none;">
+            <p>You haven't placed any orders yet. Once you order from a stall, it'll show up here.</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/patron-orders.js"></script>
+</body>
+</html>

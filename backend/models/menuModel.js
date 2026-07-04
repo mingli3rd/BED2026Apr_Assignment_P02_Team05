@@ -24,7 +24,7 @@ async function getMenuItemsByVendor(vendorId) {
           FOR XML PATH('')
         ), 1, 2, '') AS cuisines
       FROM MenuItems mi
-      WHERE mi.vendor_id = @vendor_id
+      WHERE mi.vendor_id = @vendor_id AND mi.is_active = 1
       ORDER BY mi.created_at DESC
     `;
     const result = await request.query(query);
@@ -82,6 +82,7 @@ async function findDuplicateByName(vendorId, name, excludeId = null) {
     const query = `
       SELECT id FROM MenuItems
       WHERE vendor_id = @vendor_id
+        AND is_active = 1
         AND LOWER(LTRIM(RTRIM(name))) = LOWER(@name)
         AND (@exclude_id IS NULL OR id != @exclude_id)
     `;
@@ -196,8 +197,10 @@ async function updateMenuItem(menuItemId, vendorId, itemData) {
   }
 }
 
-// Delete a menu item (only if it belongs to this vendor).
-// MenuItemCuisines rows are removed automatically via ON DELETE CASCADE.
+// "Delete" a menu item (only if it belongs to this vendor). This is a soft
+// delete — it sets is_active = 0 rather than removing the row — because a
+// hard DELETE would violate the FK constraint on OrderItems for any item
+// that has already been ordered, and would destroy historical order data.
 async function deleteMenuItem(menuItemId, vendorId) {
   let connection;
   try {
@@ -207,7 +210,7 @@ async function deleteMenuItem(menuItemId, vendorId) {
     request.input("vendor_id", sql.Int, vendorId);
 
     const result = await request.query(`
-      DELETE FROM MenuItems WHERE id = @id AND vendor_id = @vendor_id;
+      UPDATE MenuItems SET is_active = 0 WHERE id = @id AND vendor_id = @vendor_id;
       SELECT @@ROWCOUNT AS affected;
     `);
     return result.recordset[0].affected > 0;

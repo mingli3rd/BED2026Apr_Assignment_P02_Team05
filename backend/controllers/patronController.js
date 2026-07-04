@@ -32,6 +32,30 @@ async function registerPatron(req, res) {
   }
 }
 
+// Get order history for the logged-in patron ("My Orders" page).
+// req.patron is attached by the verifyPatronToken middleware.
+async function getPatronOrders(req, res) {
+  try {
+    const patron = await patronModel.getPatronById(req.patron.id);
+
+    if (!patron) {
+      return res.status(404).json({ error: "Patron not found" });
+    }
+
+    const orders = await patronModel.getOrdersByPatron(req.patron.id);
+
+    res.status(200).json({
+      patron,
+      welcome_message: `Welcome back, ${patron.name}!`,
+      orders,
+    });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading order history" });
+  }
+}
+
 module.exports = {
   registerPatron,
+  getPatronOrders,
 };

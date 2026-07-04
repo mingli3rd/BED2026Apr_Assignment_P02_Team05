@@ -84,3 +84,40 @@ async function checkVendorSession() {
 }
 
 checkVendorSession();
+
+// Same idea as checkVendorSession, but for patrons: swaps "Patron Login"
+// to "My Orders" and hides the "Patron Sign Up" link when already logged in.
+async function checkPatronSession() {
+  try {
+    const response = await fetch("http://localhost:3000/api/auth/me/patron", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.status !== 200) {
+      return; // not logged in as a patron — leave nav as-is
+    }
+
+    const loginLinks = document.querySelectorAll('a[href="patron-login.html"]');
+    loginLinks.forEach((link) => {
+      link.href = "patron-orders.html";
+      const stallNo = link.querySelector(".stall-no");
+      if (stallNo) {
+        link.innerHTML = "";
+        link.appendChild(stallNo);
+        link.append("My Orders");
+      } else {
+        link.textContent = "My Orders";
+      }
+    });
+
+    const signupLinks = document.querySelectorAll('a[href="patron-register.html"]');
+    signupLinks.forEach((link) => {
+      link.style.display = "none";
+    });
+  } catch (error) {
+    console.error("Patron session check failed:", error);
+  }
+}
+
+checkPatronSession();
