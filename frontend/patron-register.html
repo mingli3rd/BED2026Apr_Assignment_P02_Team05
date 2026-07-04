@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <!-- ===================== DIRECTORY BOARD NAV ===================== -->
+  <header class="directory-board">
+    <div class="board-inner">
+      <a href="index.html" class="board-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="board-nav" aria-label="Main navigation">
+        <a href="index.html" class="board-link"><span class="stall-no">01</span>Home</a>
+        <a href="stalls.html" class="board-link"><span class="stall-no">02</span>Find Stalls</a>
+        <a href="menu.html" class="board-link"><span class="stall-no">03</span>Order</a>
+        <a href="vendor-register.html" class="board-link"><span class="stall-no">04</span>Vendor Sign Up</a>
+        <a href="patron-register.html" class="board-link is-active"><span class="stall-no">05</span>Patron Sign Up</a>
+        <a href="hygiene.html" class="board-link"><span class="stall-no">06</span>Hygiene Grades</a>
+        <a href="credit.html" class="board-link"><span class="stall-no">07</span>Credits</a>
+      </nav>
+
+      <button class="board-menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== REGISTER SECTION ===================== -->
+  <main>
+    <section class="register-section">
+      <div class="register-inner">
+
+        <div class="register-intro">
+          <p class="eyebrow">Patron Sign Up</p>
+          <h1 class="register-title">Order like<br />a regular.</h1>
+          <p class="register-sub">
+            Save your order history, favourite your go-to stalls, and get
+            first dibs on promotions — all it takes is an email and a
+            password.
+          </p>
+
+          <div class="register-note">
+            <span class="register-note-label">Why register?</span>
+            <p>Guests can still order without an account, but registering unlocks order tracking, loyalty perks, and faster checkout next time.</p>
+          </div>
+
+          <p class="register-switch">Running a stall instead? <a href="vendor-register.html">Sign up as a vendor →</a></p>
+        </div>
+
+        <!-- Registration card, styled like a membership card rather than a permit -->
+        <div class="permit-card">
+          <div class="permit-header">
+            <span>PATRON MEMBERSHIP</span>
+            <span class="permit-status" id="patronStatus">NEW</span>
+          </div>
+
+          <form id="patronRegisterForm" class="permit-form" novalidate>
+            <div class="field">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" placeholder="e.g. Tan Wei Ming" required />
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="you@example.com" required />
+            </div>
+
+            <div class="field">
+              <label for="phone">Phone Number <span class="field-optional">(optional)</span></label>
+              <input type="tel" id="phone" placeholder="9123 4567" />
+            </div>
+
+            <div class="field">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="Min. 8 characters, letters and numbers" required />
+              <span class="field-hint">At least 8 characters, with letters and numbers.</span>
+            </div>
+
+            <div class="field">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" placeholder="Re-enter your password" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Create Account</button>
+
+            <p id="message" class="form-message" role="status" aria-live="polite"></p>
+          </form>
+
+          <div class="permit-perf" aria-hidden="true"></div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="board-logo-mark small">SG</span>
+        <span>HAWKER HUB</span>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="stalls.html">Find Stalls</a>
+        <a href="vendor-register.html">Vendor Sign Up</a>
+        <a href="patron-register.html">Patron Sign Up</a>
+        <a href="credit.html">Credits</a>
+      </nav>
+      <p class="footer-note">Built for BED Assignment · Diploma in Information Technology · Ngee Ann Polytechnic</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/patron-register.js"></script>
+</body>
+</html>

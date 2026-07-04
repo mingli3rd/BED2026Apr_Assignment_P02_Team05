@@ -8,6 +8,9 @@ dotenv.config();
 const vendorController = require("./controllers/vendorController");
 const { validateVendorRegister } = require("./middlewares/vendorValidation"); // import Vendor Validation Middleware
 
+const patronController = require("./controllers/patronController");
+const { validatePatronRegister } = require("./middlewares/patronValidation");
+
 // Create Express app
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,6 +28,7 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 // Routes for vendor auth
 // Apply middleware *before* the controller function for routes that need it
 app.post("/api/auth/vendor/register", validateVendorRegister, vendorController.registerVendor);
+app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron);
 
 
 // Start server

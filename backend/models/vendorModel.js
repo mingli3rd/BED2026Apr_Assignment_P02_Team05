@@ -6,7 +6,7 @@ async function findUserByEmail(email) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
-    const query = "SELECT id, email FROM Users WHERE email = @email";
+    const query = "SELECT id, email FROM Vendors WHERE email = @email";
     const request = connection.request();
     request.input("email", sql.VarChar, email);
     const result = await request.query(query);
@@ -36,7 +36,7 @@ async function createVendor(vendorData) {
   try {
     connection = await sql.connect(dbConfig);
     const query = `
-      INSERT INTO Users (business_name, email, phone, password_hash, role, hawker_centre_id, stall_number, approval_status)
+      INSERT INTO Vendors (business_name, email, phone, password_hash, role, hawker_centre_id, stall_number, approval_status)
       VALUES (@business_name, @email, @phone, @password_hash, @role, @hawker_centre_id, @stall_number, @approval_status);
       SELECT SCOPE_IDENTITY() AS id;
     `;
@@ -75,7 +75,7 @@ async function getVendorById(id) {
     connection = await sql.connect(dbConfig);
     const query = `
       SELECT id, business_name, email, phone, role, hawker_centre_id, stall_number, approval_status, created_at
-      FROM Users
+      FROM Vendors
       WHERE id = @id
     `;
     const request = connection.request();
