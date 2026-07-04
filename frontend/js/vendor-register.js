@@ -4,6 +4,23 @@ const submitBtn = document.getElementById("submitBtn");
 const permitStatus = document.getElementById("permitStatus");
 const apiBaseUrl = "http://localhost:3000";
 
+// If a vendor is already logged in, registering again makes no sense —
+// send them straight to their dashboard instead.
+(async function redirectIfLoggedIn() {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (response.status === 200) {
+      window.location.href = "vendor-dashboard.html";
+    }
+  } catch (error) {
+    // If the check fails (e.g. server unreachable), just let the page load normally
+    console.error("Session check failed:", error);
+  }
+})();
+
 vendorRegisterForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 

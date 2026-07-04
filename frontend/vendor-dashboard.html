@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vendor Dashboard — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-shell">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="dash-sidebar">
+      <a href="index.html" class="board-logo dash-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="dash-nav" aria-label="Dashboard navigation">
+        <a href="vendor-dashboard.html" class="dash-nav-link is-active">
+          <span class="stall-no">01</span> Overview
+        </a>
+        <a href="menu.html" class="dash-nav-link">
+          <span class="stall-no">02</span> Menu
+        </a>
+        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+          <span class="stall-no">03</span> Orders
+        </a>
+        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+          <span class="stall-no">04</span> Stall Profile
+        </a>
+        <a href="stall-performance.html" class="dash-nav-link">
+          <span class="stall-no">05</span> Performance
+        </a>
+      </nav>
+
+      <div class="dash-sidebar-footer">
+        <a href="index.html" class="dash-nav-link dash-back-link">← Back to Site</a>
+        <button id="logoutBtn" class="dash-logout-btn">Log Out</button>
+      </div>
+    </aside>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <main class="dash-main">
+
+      <div id="dashboardLoading" class="dashboard-loading">Loading your dashboard...</div>
+      <div id="dashboardError" class="form-message is-warning" style="display: none;"></div>
+
+      <div id="dashboardContent" class="dashboard-content" style="display: none;">
+
+        <!-- Header -->
+        <div class="dash-header">
+          <div>
+            <p class="eyebrow">Vendor Dashboard</p>
+            <h1 class="dash-welcome" id="welcomeMessage">Welcome back.</h1>
+          </div>
+          <span class="permit-status" id="approvalBadge">STATUS</span>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="dash-stats-grid">
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Pending</span>
+            <h3 id="pendingOrders">0</h3>
+            <p>Orders awaiting action</p>
+          </div>
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Menu</span>
+            <h3 id="menuItems">0</h3>
+            <p>Items currently listed</p>
+          </div>
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Rating</span>
+            <h3 id="avgRating">–</h3>
+            <p>Average customer rating</p>
+          </div>
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Today</span>
+            <h3 id="todayRevenue">$0</h3>
+            <p>Revenue so far today</p>
+          </div>
+        </div>
+
+        <!-- Recent orders -->
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2>Recent Orders</h2>
+            <span class="dash-panel-note">Your 5 most recent orders</span>
+          </div>
+
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Item</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+
+          <div id="ordersEmptyState" class="dash-empty-state" style="display: none;">
+            <p>No orders yet. Once patrons start ordering, they'll show up here.</p>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2>Quick Actions</h2>
+          </div>
+          <div class="dash-actions-grid">
+            <button class="dash-action-btn" disabled title="Coming soon">+ Add Menu Item</button>
+            <button class="dash-action-btn" disabled title="Coming soon">View All Orders</button>
+            <button class="dash-action-btn" disabled title="Coming soon">Edit Stall Profile</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/vendor-dashboard.js"></script>
+</body>
+</html>

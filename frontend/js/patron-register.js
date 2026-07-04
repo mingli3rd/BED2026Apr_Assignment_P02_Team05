@@ -4,6 +4,22 @@ const submitBtn = document.getElementById("submitBtn");
 const patronStatus = document.getElementById("patronStatus");
 const apiBaseUrl = "http://localhost:3000";
 
+// If a vendor is already logged in, send them to their dashboard rather
+// than letting them fill out a patron sign-up form on this session.
+(async function redirectIfLoggedInAsVendor() {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (response.status === 200) {
+      window.location.href = "vendor-dashboard.html";
+    }
+  } catch (error) {
+    console.error("Session check failed:", error);
+  }
+})();
+
 patronRegisterForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 

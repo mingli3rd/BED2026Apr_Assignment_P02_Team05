@@ -34,6 +34,62 @@ async function registerVendor(req, res) {
   }
 }
 
+// Converts a timestamp into a short relative string like "10 mins ago"
+function formatTimeAgo(dateValue) {
+  const now = new Date();
+  const then = new Date(dateValue);
+  const diffMs = now - then;
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins} min${diffMins === 1 ? "" : "s"} ago`;
+
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+}
+
+// Get dashboard data for the logged-in vendor (protected route)
+// req.vendor is attached by the verifyVendorToken middleware
+async function getDashboard(req, res) {
+  try {
+    const vendor = await vendorModel.getVendorById(req.vendor.id);
+
+    if (!vendor) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    const overview = await vendorModel.getVendorOverview(req.vendor.id);
+
+    // Reshape the recent orders into the format the dashboard UI expects
+    const recentOrders = overview.recent_orders.map((order) => ({
+      id: `ORD-${order.order_id}`,
+      item: order.items || "(no items recorded)",
+      customer: order.customer,
+      status: order.order_status,
+      time: formatTimeAgo(order.created_at),
+    }));
+
+    res.status(200).json({
+      vendor,
+      summary: {
+        message: `Welcome back, ${vendor.business_name}!`,
+        pending_orders: overview.pending_orders,
+        menu_items: overview.menu_items,
+        avg_rating: Number(overview.avg_rating.toFixed(1)),
+        today_revenue: overview.today_revenue,
+      },
+      recent_orders: recentOrders,
+    });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading dashboard" });
+  }
+}
+
 module.exports = {
   registerVendor,
+  getDashboard,
 };

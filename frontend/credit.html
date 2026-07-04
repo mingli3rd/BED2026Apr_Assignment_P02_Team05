@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Credits — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <!-- ===================== DIRECTORY BOARD NAV ===================== -->
+  <header class="directory-board">
+    <div class="board-inner">
+      <a href="index.html" class="board-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="board-nav" aria-label="Main navigation">
+        <a href="index.html" class="board-link"><span class="stall-no">01</span>Home</a>
+        <a href="stalls.html" class="board-link"><span class="stall-no">02</span>Find Stalls</a>
+        <a href="menu.html" class="board-link"><span class="stall-no">03</span>Order</a>
+        <a href="vendor-register.html" class="board-link"><span class="stall-no">04</span>Vendor Sign Up</a>
+        <a href="patron-register.html" class="board-link"><span class="stall-no">05</span>Patron Sign Up</a>
+        <a href="vendor-login.html" class="board-link"><span class="stall-no">06</span>Vendor Login</a>
+        <a href="hygiene.html" class="board-link"><span class="stall-no">07</span>Hygiene Grades</a>
+        <a href="credit.html" class="board-link is-active"><span class="stall-no">08</span>Credits</a>
+      </nav>
+
+      <button class="board-menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== CREDITS SECTION ===================== -->
+  <main>
+    <section class="credits-section">
+      <p class="section-eyebrow">Acknowledgements</p>
+      <h1 class="section-title">Credits &amp; Sources</h1>
+      <p class="credits-intro">
+        This project was built for the Back-End Development (BED) module
+        assignment at Ngee Ann Polytechnic. The sections below acknowledge
+        the fonts, libraries, and any external media used across the
+        application. Update this page as your team adds images, icons,
+        or other third-party assets.
+      </p>
+
+      <div class="credits-grid">
+        <article class="credit-card">
+          <span class="stall-card-no">Fonts</span>
+          <h3>Google Fonts</h3>
+          <p>Anton, IBM Plex Sans, and IBM Plex Mono — used under the SIL Open Font License, served via Google Fonts CDN.</p>
+          <a class="credit-link" href="https://fonts.google.com" target="_blank" rel="noopener noreferrer">fonts.google.com</a>
+        </article>
+
+        <article class="credit-card">
+          <span class="stall-card-no">Backend</span>
+          <h3>Node.js &amp; Express</h3>
+          <p>Server framework and runtime used to build the RESTful API.</p>
+          <a class="credit-link" href="https://expressjs.com" target="_blank" rel="noopener noreferrer">expressjs.com</a>
+        </article>
+
+        <article class="credit-card">
+          <span class="stall-card-no">Database</span>
+          <h3>Microsoft SQL Server</h3>
+          <p>Relational database used to store vendor, patron, and stall data via the <code>mssql</code> Node.js driver.</p>
+          <a class="credit-link" href="https://www.npmjs.com/package/mssql" target="_blank" rel="noopener noreferrer">npmjs.com/package/mssql</a>
+        </article>
+
+        <article class="credit-card">
+          <span class="stall-card-no">Validation</span>
+          <h3>Joi</h3>
+          <p>Schema validation library used for request validation across API endpoints.</p>
+          <a class="credit-link" href="https://joi.dev" target="_blank" rel="noopener noreferrer">joi.dev</a>
+        </article>
+
+        <article class="credit-card">
+          <span class="stall-card-no">Security</span>
+          <h3>bcrypt &amp; jsonwebtoken</h3>
+          <p>bcrypt hashes user passwords before storage; jsonwebtoken issues session tokens for login authentication.</p>
+          <a class="credit-link" href="https://www.npmjs.com/package/bcrypt" target="_blank" rel="noopener noreferrer">npmjs.com/package/bcrypt</a>
+        </article>
+
+        <article class="credit-card credit-card-placeholder">
+          <span class="stall-card-no">Media</span>
+          <h3>Images &amp; Media (TBC)</h3>
+          <p>Add citations here for any stall photos, icons, or illustrations sourced from the internet, with links to the original source.</p>
+        </article>
+      </div>
+
+      <div class="credits-team">
+        <span class="register-note-label">Project Team</span>
+        <p>List each team member's name and Student ID here, along with the individual feature they were responsible for, as required by the assignment cover page.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="board-logo-mark small">SG</span>
+        <span>HAWKER HUB</span>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="stalls.html">Find Stalls</a>
+        <a href="vendor-register.html">Vendor Sign Up</a>
+        <a href="patron-register.html">Patron Sign Up</a>
+        <a href="vendor-login.html">Vendor Login</a>
+        <a href="credit.html">Credits</a>
+      </nav>
+      <p class="footer-note">Built for BED Assignment · Diploma in Information Technology · Ngee Ann Polytechnic</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

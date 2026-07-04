@@ -101,8 +101,133 @@ async function getVendorById(id) {
   }
 }
 
+// Get full vendor record by email, including password_hash, for login authentication
+async function getVendorAuthByEmail(email) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+      SELECT id, business_name, email, password_hash, role, approval_status
+      FROM Vendors
+      WHERE email = @email
+    `;
+    const request = connection.request();
+    request.input("email", sql.VarChar, email);
+    const result = await request.query(query);
+
+    if (result.recordset.length === 0) {
+      return null;
+    }
+
+    return result.recordset[0];
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
+    }
+  }
+}
+
+// Get real overview stats for the vendor dashboard: pending order count,
+// menu item count, average rating, today's revenue, and the 5 most recent
+// orders (with item names and customer name resolved).
+async function getVendorOverview(vendorId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+
+    // Pending order count
+    const pendingRequest = connection.request();
+    pendingRequest.input("vendor_id", sql.Int, vendorId);
+    const pendingResult = await pendingRequest.query(`
+      SELECT COUNT(*) AS pending_orders
+      FROM Orders
+      WHERE vendor_id = @vendor_id AND order_status = 'pending'
+    `);
+
+    // Menu item count
+    const menuRequest = connection.request();
+    menuRequest.input("vendor_id", sql.Int, vendorId);
+    const menuResult = await menuRequest.query(`
+      SELECT COUNT(*) AS menu_items
+      FROM MenuItems
+      WHERE vendor_id = @vendor_id
+    `);
+
+    // Average rating across all feedback
+    const ratingRequest = connection.request();
+    ratingRequest.input("vendor_id", sql.Int, vendorId);
+    const ratingResult = await ratingRequest.query(`
+      SELECT ISNULL(AVG(CAST(rating AS FLOAT)), 0) AS avg_rating
+      FROM Feedback
+      WHERE vendor_id = @vendor_id
+    `);
+
+    // Today's revenue (completed orders only, placed today)
+    const revenueRequest = connection.request();
+    revenueRequest.input("vendor_id", sql.Int, vendorId);
+    const revenueResult = await revenueRequest.query(`
+      SELECT ISNULL(SUM(total_amount), 0) AS today_revenue
+      FROM Orders
+      WHERE vendor_id = @vendor_id
+        AND order_status = 'completed'
+        AND CAST(created_at AS DATE) = CAST(GETDATE() AS DATE)
+    `);
+
+    // 5 most recent orders, with item names concatenated and customer
+    // resolved to the patron's name (or "Guest" if patron_id is NULL)
+    const ordersRequest = connection.request();
+    ordersRequest.input("vendor_id", sql.Int, vendorId);
+    const ordersResult = await ordersRequest.query(`
+      SELECT TOP 5
+        o.id AS order_id,
+        o.order_status,
+        o.created_at,
+        ISNULL(p.name, 'Guest') AS customer,
+        STUFF((
+          SELECT ', ' + mi.name + CASE WHEN oi.quantity > 1 THEN ' x' + CAST(oi.quantity AS VARCHAR) ELSE '' END
+          FROM OrderItems oi
+          JOIN MenuItems mi ON oi.menu_item_id = mi.id
+          WHERE oi.order_id = o.id
+          FOR XML PATH('')
+        ), 1, 2, '') AS items
+      FROM Orders o
+      LEFT JOIN Patrons p ON o.patron_id = p.id
+      WHERE o.vendor_id = @vendor_id
+      ORDER BY o.created_at DESC
+    `);
+
+    return {
+      pending_orders: pendingResult.recordset[0].pending_orders,
+      menu_items: menuResult.recordset[0].menu_items,
+      avg_rating: ratingResult.recordset[0].avg_rating,
+      today_revenue: revenueResult.recordset[0].today_revenue,
+      recent_orders: ordersResult.recordset,
+    };
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
+    }
+  }
+}
+
 module.exports = {
   findUserByEmail,
   createVendor,
   getVendorById,
+  getVendorAuthByEmail,
+  getVendorOverview,
 };
