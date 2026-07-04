@@ -1608,3 +1608,93 @@ img {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* =========================================================
+   RENTAL AGREEMENTS
+========================================================= */
+
+.notif-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--stool-red);
+  margin-left: auto;
+}
+
+.notif-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  margin-bottom: 12px;
+}
+
+.notif-banner-warning {
+  background-color: rgba(232, 163, 61, 0.14);
+  border: 1px solid rgba(232, 163, 61, 0.35);
+  color: var(--mustard);
+}
+
+.notif-banner-danger {
+  background-color: rgba(214, 73, 51, 0.14);
+  border: 1px solid rgba(214, 73, 51, 0.35);
+  color: var(--stool-red);
+}
+
+.notif-banner-icon {
+  font-size: 16px;
+}
+
+.status-expired {
+  background-color: rgba(214, 73, 51, 0.18);
+  color: var(--stool-red);
+}
+
+.agreement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.agreement-card {
+  background-color: var(--teal-mid);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+}
+
+.agreement-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.agreement-card-dates {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--chalk);
+}
+
+.agreement-arrow {
+  color: var(--muted);
+}
+
+.agreement-card-expiry {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+.agreement-card-notes {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}

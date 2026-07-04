@@ -27,7 +27,7 @@ function renderSalesChart(dailyTrend) {
   emptyState.style.display = "none";
 
   const labels = dailyTrend.map((day) =>
-    new Date(day.order_date).toLocaleDateString("en-SG", { weekday: "short", day: "numeric" })
+    new Date(day.order_date).toLocaleDateString("en-SG", { month: "short", day: "numeric" })
   );
   const revenues = dailyTrend.map((day) => day.daily_revenue);
 

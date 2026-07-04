@@ -68,6 +68,10 @@ app.put("/api/vendor/menu/:id", verifyVendorToken, validateMenuItem, menuControl
 app.delete("/api/vendor/menu/:id", verifyVendorToken, menuController.deleteMenuItem);
 app.get("/api/cuisines", verifyVendorToken, menuController.listCuisines);
 
+
+const rentalController = require("./controllers/rentalController");
+app.get("/api/vendor/rental-agreements", verifyVendorToken, rentalController.listRentalAgreements);
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

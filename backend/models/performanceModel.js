@@ -36,10 +36,32 @@ async function getSalesSummary(vendorId) {
     `;
     const trendResult = await trendRequest.query(trendQuery);
 
+    // The query above only returns rows for days that actually had
+    // completed orders. Fill in the missing days with 0 revenue so the
+    // chart always shows a full, evenly-spaced 7-day span instead of
+    // silently compressing down to just the days with sales.
+    const dailyTrend = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+      const match = trendResult.recordset.find((row) => {
+        const rowDateStr = new Date(row.order_date).toISOString().split("T")[0];
+        return rowDateStr === dateStr;
+      });
+
+      dailyTrend.push({
+        order_date: dateStr,
+        daily_revenue: match ? match.daily_revenue : 0,
+        daily_orders: match ? match.daily_orders : 0,
+      });
+    }
+
     return {
       total_orders: totalsResult.recordset[0].total_orders,
       total_revenue: totalsResult.recordset[0].total_revenue,
-      daily_trend: trendResult.recordset,
+      daily_trend: dailyTrend,
     };
   } catch (error) {
     console.error("Database error:", error);
