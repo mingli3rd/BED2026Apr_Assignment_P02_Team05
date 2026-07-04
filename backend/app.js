@@ -69,7 +69,7 @@ app.delete("/api/vendor/menu/:id", verifyVendorToken, menuController.deleteMenuI
 app.get("/api/cuisines", verifyVendorToken, menuController.listCuisines);
 
 
-const rentalController = require("./controllers/rentalController");
+const rentalController = require("./controllers/rentalController"); 
 app.get("/api/vendor/rental-agreements", verifyVendorToken, rentalController.listRentalAgreements);
 
 // Start server
