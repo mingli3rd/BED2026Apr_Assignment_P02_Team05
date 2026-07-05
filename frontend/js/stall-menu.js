@@ -35,6 +35,15 @@ async function loadStallPicker() {
   }
 }
 
+function getCategoryImage(category) {
+  const normalized = (category || "").toLowerCase();
+  if (normalized === "main") return "images/dish-main.svg";
+  if (normalized === "side") return "images/dish-side.svg";
+  if (normalized === "drink") return "images/dish-drink.svg";
+  if (normalized === "dessert") return "images/dish-dessert.svg";
+  return "images/dish-default.svg";
+}
+
 function renderMenu(menu) {
   const grid = document.getElementById("menuGrid");
 
@@ -47,6 +56,7 @@ function renderMenu(menu) {
     .map(
       (item) => `
         <div class="stall-item-card">
+          <img src="${getCategoryImage(item.category)}" alt="" class="stall-item-img" />
           <div class="stall-item-info">
             <h3>${item.name}</h3>
             <span class="mono">$${Number(item.price).toFixed(2)}</span>
@@ -61,6 +71,21 @@ function renderMenu(menu) {
   grid.querySelectorAll("[data-item-id]").forEach((btn) => {
     btn.addEventListener("click", () => openAddOnModal(btn.dataset.itemId));
   });
+}
+
+// Vendor-specific banner photos. Add an entry here as real stall photos
+// become available; any vendor not listed falls back to the generic
+// illustrated banner.
+const VENDOR_BANNER_IMAGES = {
+  1: "images/ah-huat-chicken-rice-banner.jpg", // Ah Huat Chicken Rice
+  2: "images/lucky-wanton-noodle-banner.jpg",  // Lucky Wanton Noodle
+  3: "images/nasi-lemak-corner-banner.jpg",    // Nasi Lemak Corner
+};
+
+function updateStallBanner(vendorId) {
+  const bannerImg = document.querySelector(".stall-banner-img");
+  if (!bannerImg) return;
+  bannerImg.src = VENDOR_BANNER_IMAGES[vendorId] || "images/stall-banner.svg";
 }
 
 async function loadStallMenu(vendorId) {
@@ -78,6 +103,7 @@ async function loadStallMenu(vendorId) {
 
       document.getElementById("stallEyebrow").textContent = `Stall ${data.vendor.stall_number}`;
       document.getElementById("stallName").textContent = data.vendor.business_name;
+      updateStallBanner(vendorId);
 
       renderMenu(data.menu);
       document.getElementById("menuLoading").style.display = "none";
