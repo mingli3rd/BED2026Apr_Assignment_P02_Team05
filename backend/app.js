@@ -30,6 +30,16 @@ const { validateMenuItem } = require("./middlewares/menuValidation");
 // --- Rental Agreements ---
 const rentalController = require("./controllers/rentalController");
 
+// --- Public Stall Browsing ---
+const stallController = require("./controllers/stallController");
+
+// --- Cart ---
+const cartController = require("./controllers/cartController");
+const { validateCartItem, validateCheckout } = require("./middlewares/cartValidation");
+
+// --- Checkout / Orders ---
+const checkoutController = require("./controllers/checkoutController");
+
 
 // Create Express app
 const app = express();
@@ -59,14 +69,13 @@ app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor);
 app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron);
 
 // ===================== PROTECTED VENDOR ROUTES =====================
-// verifyVendorToken checks the JWT cookie before allowing access
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
 
 // ===================== PROTECTED PATRON ROUTES =====================
 app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders);
 
-// ===================== MENU MANAGEMENT ROUTES =====================
+// ===================== MENU MANAGEMENT ROUTES (vendor-facing) =====================
 app.get("/api/vendor/menu", verifyVendorToken, menuController.listMenuItems);
 app.get("/api/vendor/menu/:id/cuisines", verifyVendorToken, menuController.getItemCuisines);
 app.post("/api/vendor/menu", verifyVendorToken, validateMenuItem, menuController.createMenuItem);
@@ -76,6 +85,22 @@ app.get("/api/cuisines", verifyVendorToken, menuController.listCuisines);
 
 // ===================== RENTAL AGREEMENT ROUTES =====================
 app.get("/api/vendor/rental-agreements", verifyVendorToken, rentalController.listRentalAgreements);
+
+// ===================== PUBLIC STALL BROWSING (guests + patrons) =====================
+app.get("/api/stalls", stallController.listStalls);
+app.get("/api/stalls/:vendorId/menu", stallController.getStallMenu);
+
+// ===================== CART (logged-in patrons only — guests use localStorage) =====================
+app.post("/api/cart", verifyPatronToken, validateCartItem, cartController.addToCart);
+app.get("/api/cart", verifyPatronToken, cartController.getCart);
+app.put("/api/cart/:id", verifyPatronToken, cartController.updateCartItem);
+app.delete("/api/cart/:id", verifyPatronToken, cartController.removeCartItem);
+app.delete("/api/cart", verifyPatronToken, cartController.clearCart);
+
+// ===================== CHECKOUT / ORDERS (works for guests AND logged-in patrons) =====================
+app.post("/api/orders", validateCheckout, checkoutController.createOrder);
+app.post("/api/guest/checkout", validateCheckout, checkoutController.createOrder); // alias, same handler — explicit endpoint for guest checkout per spec
+app.get("/api/guest/orders", checkoutController.getGuestOrders);
 
 // Start server
 app.listen(port, () => {

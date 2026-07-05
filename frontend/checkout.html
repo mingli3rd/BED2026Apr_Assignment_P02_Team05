@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <header class="directory-board">
+    <div class="board-inner">
+      <a href="index.html" class="board-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="board-nav" aria-label="Main navigation">
+        <a href="index.html" class="board-link"><span class="stall-no">01</span>Home</a>
+        <a href="stall-menu.html" class="board-link"><span class="stall-no">02</span>Order</a>
+        <a href="hygiene.html" class="board-link"><span class="stall-no">03</span>Hygiene Grades</a>
+        <a href="credit.html" class="board-link"><span class="stall-no">04</span>Credits</a>
+      </nav>
+
+      <div class="board-auth" id="boardAuth">
+        <a href="cart.html" class="cart-icon-link" id="cartIconLink">
+          🛒 <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
+        </a>
+      </div>
+
+      <button class="board-menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="checkout-section">
+
+      <!-- STATE 1: Checkout form -->
+      <div id="checkoutForm">
+        <p class="eyebrow">Checkout</p>
+        <h1 class="section-title">Almost there.</h1>
+
+        <div id="checkoutEmptyState" class="dash-empty-state" style="display:none;">
+          <p>Your cart is empty. <a href="stall-menu.html">Browse stalls</a> to add something first.</p>
+        </div>
+
+        <div id="checkoutContent">
+          <div id="orderGroups" class="checkout-order-groups"></div>
+
+          <div class="dash-panel">
+            <div class="dash-panel-header">
+              <h2>Price Breakdown</h2>
+            </div>
+            <div class="breakdown-row"><span>Subtotal</span><span class="mono" id="breakdownSubtotal">$0.00</span></div>
+            <div class="breakdown-row"><span>Packaging Fee ($0.30 / item)</span><span class="mono" id="breakdownPackaging">$0.00</span></div>
+            <div class="breakdown-row breakdown-total"><span>Total</span><span class="mono" id="breakdownTotal">$0.00</span></div>
+          </div>
+
+          <div class="dash-panel">
+            <div class="dash-panel-header">
+              <h2>Payment Method</h2>
+            </div>
+            <div class="payment-method-grid">
+              <label class="payment-method-option">
+                <input type="radio" name="paymentMethod" value="cash" checked />
+                <span>Cash</span>
+              </label>
+              <label class="payment-method-option">
+                <input type="radio" name="paymentMethod" value="nets" />
+                <span>NETS</span>
+              </label>
+              <label class="payment-method-option">
+                <input type="radio" name="paymentMethod" value="paynow" />
+                <span>PayNow</span>
+              </label>
+            </div>
+
+            <label class="checkbox-field" style="margin-top:16px;">
+              <input type="checkbox" id="simulateFailure" />
+              <span>Simulate payment failure (for testing)</span>
+            </label>
+          </div>
+
+          <div class="dash-panel" id="guestEmailPanel">
+            <div class="dash-panel-header">
+              <h2>Email <span class="field-optional">(optional)</span></h2>
+            </div>
+            <p class="muted" style="font-size:13px; margin: 0 0 12px;">Leave your email to get your order confirmation and track your order later. Not required.</p>
+            <input type="email" id="guestEmail" placeholder="you@example.com" />
+          </div>
+
+          <p id="checkoutMessage" class="form-message" role="status" aria-live="polite"></p>
+
+          <button class="btn btn-primary btn-full" id="payButton">Pay Now</button>
+        </div>
+      </div>
+
+      <!-- STATE 2: Success -->
+      <div id="successState" style="display:none;">
+        <div class="result-banner result-banner-success">
+          <span class="result-icon">✓</span>
+          <div>
+            <h2>Payment Successful!</h2>
+            <p id="successSummary"></p>
+          </div>
+        </div>
+
+        <div id="successOrdersList" class="checkout-order-groups"></div>
+
+        <div id="saveInfoUpsell" class="register-note" style="margin: 20px 0;">
+          <span class="register-note-label">Ordered as a guest?</span>
+          <p>Create an account to save your order history and reorder faster next time.</p>
+          <a href="patron-register.html" class="btn btn-ghost" id="saveInfoLink" style="margin-top:10px;">Save My Info →</a>
+        </div>
+
+        <a href="patron-orders.html" class="btn btn-primary btn-full" style="margin-top:20px;" id="viewOrdersBtn">View My Orders</a>
+        <a href="stall-menu.html" class="btn btn-ghost btn-full" style="margin-top:12px;">Continue Browsing</a>
+      </div>
+
+      <!-- STATE 3: Failure -->
+      <div id="failureState" style="display:none;">
+        <div class="result-banner result-banner-failure">
+          <span class="result-icon">✕</span>
+          <div>
+            <h2>Payment Failed</h2>
+            <p id="failureReason"></p>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="retryPaymentBtn" style="margin-top:20px;">Retry Payment</button>
+        <a href="cart.html" class="btn btn-ghost btn-full" style="margin-top:12px;">Back to Cart</a>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="js/main.js"></script>
+  <script src="js/cart-store.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>

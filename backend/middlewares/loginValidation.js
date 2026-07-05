@@ -12,6 +12,9 @@ const loginSchema = Joi.object({
     "any.required": "Password is required",
   }),
   remember_me: Joi.boolean().optional(),
+  expected_role: Joi.string().valid("vendor", "patron").optional().messages({
+    "any.only": "expected_role must be either 'vendor' or 'patron'",
+  }),
 });
 
 // Middleware to validate login data (for POST)

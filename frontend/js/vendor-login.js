@@ -33,6 +33,7 @@ vendorLoginForm.addEventListener("submit", async (event) => {
         email,
         password,
         remember_me: rememberMe,
+        expected_role: "vendor",
       }),
     });
 

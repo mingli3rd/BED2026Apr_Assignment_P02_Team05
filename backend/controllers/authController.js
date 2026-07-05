@@ -5,62 +5,74 @@ const patronModel = require("../models/patronModel");
 
 // Shared login endpoint for both vendors and patrons. Vendors and patrons
 // live in separate tables (Vendors / Patrons) with separate email
-// uniqueness constraints, so we check Vendors first, then fall back to
-// Patrons if no vendor matches that email.
+// uniqueness constraints.
+//
+// If the request includes expected_role ("vendor" or "patron"), only that
+// table is checked — this is what each dedicated login page sends, so
+// entering a vendor's credentials on the Patron Login page correctly fails
+// with "Invalid email or password" instead of silently logging them in as
+// the wrong role. If expected_role is omitted, both tables are checked
+// (vendor first) as a fallback for any generic caller of this endpoint.
 async function login(req, res) {
   try {
-    const { email, password, remember_me } = req.body;
+    const { email, password, remember_me, expected_role } = req.body;
 
-    const vendor = await vendorModel.getVendorAuthByEmail(email);
+    const shouldCheckVendor = !expected_role || expected_role === "vendor";
+    const shouldCheckPatron = !expected_role || expected_role === "patron";
 
-    if (vendor) {
-      const passwordMatches = await bcrypt.compare(password, vendor.password_hash);
-      if (!passwordMatches) {
-        return res.status(401).json({ error: "Invalid email or password" });
+    if (shouldCheckVendor) {
+      const vendor = await vendorModel.getVendorAuthByEmail(email);
+
+      if (vendor) {
+        const passwordMatches = await bcrypt.compare(password, vendor.password_hash);
+        if (!passwordMatches) {
+          return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        if (vendor.approval_status === "pending") {
+          return res.status(403).json({ error: "Your account is still pending approval." });
+        }
+        if (vendor.approval_status === "rejected") {
+          return res.status(403).json({ error: "Your account application was not approved." });
+        }
+
+        return issueToken(res, {
+          id: vendor.id,
+          email: vendor.email,
+          role: "vendor",
+        }, remember_me, {
+          id: vendor.id,
+          business_name: vendor.business_name,
+          email: vendor.email,
+          role: "vendor",
+        });
       }
-
-      if (vendor.approval_status === "pending") {
-        return res.status(403).json({ error: "Your account is still pending approval." });
-      }
-      if (vendor.approval_status === "rejected") {
-        return res.status(403).json({ error: "Your account application was not approved." });
-      }
-
-      return issueToken(res, {
-        id: vendor.id,
-        email: vendor.email,
-        role: "vendor",
-      }, remember_me, {
-        id: vendor.id,
-        business_name: vendor.business_name,
-        email: vendor.email,
-        role: "vendor",
-      });
     }
 
-    // No vendor found with that email — check Patrons instead
-    const patron = await patronModel.getPatronAuthByEmail(email);
+    if (shouldCheckPatron) {
+      const patron = await patronModel.getPatronAuthByEmail(email);
 
-    if (patron) {
-      const passwordMatches = await bcrypt.compare(password, patron.password_hash);
-      if (!passwordMatches) {
-        return res.status(401).json({ error: "Invalid email or password" });
+      if (patron) {
+        const passwordMatches = await bcrypt.compare(password, patron.password_hash);
+        if (!passwordMatches) {
+          return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        return issueToken(res, {
+          id: patron.id,
+          email: patron.email,
+          role: "patron",
+        }, remember_me, {
+          id: patron.id,
+          name: patron.name,
+          email: patron.email,
+          role: "patron",
+        });
       }
-
-      return issueToken(res, {
-        id: patron.id,
-        email: patron.email,
-        role: "patron",
-      }, remember_me, {
-        id: patron.id,
-        name: patron.name,
-        email: patron.email,
-        role: "patron",
-      });
     }
 
-    // Neither table had this email — use the same generic message either
-    // way, so we don't reveal whether an email is registered at all
+    // No match in the table(s) we were allowed to check — same generic
+    // message either way, so we don't reveal whether an email exists
     return res.status(401).json({ error: "Invalid email or password" });
 
   } catch (error) {
@@ -70,7 +82,6 @@ async function login(req, res) {
 }
 
 // Signs a JWT for the given payload and sets it as an HTTP-only cookie.
-// Shared by both the vendor and patron login branches above.
 function issueToken(res, tokenPayload, rememberMe, responseUser) {
   const expiresIn = rememberMe ? "30d" : "1d";
   const maxAgeMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
@@ -98,8 +109,6 @@ function logout(req, res) {
 }
 
 // Returns the currently logged-in vendor's basic info.
-// Protected by verifyVendorToken — if there's no valid cookie, that
-// middleware already responds with 401 before this function even runs.
 function getCurrentVendor(req, res) {
   res.status(200).json({
     vendor: {
@@ -111,7 +120,6 @@ function getCurrentVendor(req, res) {
 }
 
 // Returns the currently logged-in patron's basic info.
-// Protected by verifyPatronToken.
 function getCurrentPatron(req, res) {
   res.status(200).json({
     patron: {

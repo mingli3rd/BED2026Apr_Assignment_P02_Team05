@@ -25,26 +25,17 @@ patronLoginForm.addEventListener("submit", async (event) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password, remember_me: rememberMe }),
+      body: JSON.stringify({ email, password, remember_me: rememberMe, expected_role: "patron" }),
     });
 
     if (response.status === 200) {
       const data = await response.json();
-
-      // The shared login endpoint returns either { vendor: ... } or
-      // { patron: ... } depending on which table matched. This page only
-      // expects a patron login — if a vendor's credentials somehow land
-      // here, redirect them to the vendor dashboard instead.
-      if (data.patron) {
-        messageDiv.textContent = `Welcome back, ${data.patron.name}! Redirecting...`;
-        messageDiv.className = "form-message is-success";
-        loginStatus.textContent = "UNLOCKED";
-        setTimeout(() => {
-          window.location.href = "patron-orders.html";
-        }, 900);
-      } else if (data.vendor) {
-        window.location.href = "vendor-dashboard.html";
-      }
+      messageDiv.textContent = `Welcome back, ${data.patron.name}! Redirecting...`;
+      messageDiv.className = "form-message is-success";
+      loginStatus.textContent = "UNLOCKED";
+      setTimeout(() => {
+        window.location.href = "patron-orders.html";
+      }, 900);
 
     } else if (response.status === 401) {
       const errorBody = await response.json();

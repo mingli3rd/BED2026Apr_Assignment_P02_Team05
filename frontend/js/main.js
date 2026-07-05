@@ -1,13 +1,38 @@
 // Mobile nav toggle for the directory board
 const menuToggle = document.getElementById("menuToggle");
 const boardNav = document.querySelector(".board-nav");
+const boardAuth = document.getElementById("boardAuth");
 
 if (menuToggle && boardNav) {
   menuToggle.addEventListener("click", () => {
     const isOpen = boardNav.classList.toggle("is-open");
     menuToggle.setAttribute("aria-expanded", isOpen);
+    if (boardAuth) {
+      boardAuth.classList.toggle("is-mobile-open", isOpen);
+    }
   });
 }
+
+// Sign Up / Log In dropdown toggles
+document.querySelectorAll(".auth-dropdown-toggle").forEach((toggle) => {
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const dropdown = toggle.closest(".auth-dropdown");
+    const wasOpen = dropdown.classList.contains("is-open");
+
+    // Close any other open dropdown first
+    document.querySelectorAll(".auth-dropdown.is-open").forEach((d) => d.classList.remove("is-open"));
+
+    if (!wasOpen) {
+      dropdown.classList.add("is-open");
+    }
+  });
+});
+
+// Click anywhere outside a dropdown to close it
+document.addEventListener("click", () => {
+  document.querySelectorAll(".auth-dropdown.is-open").forEach((d) => d.classList.remove("is-open"));
+});
 
 // Signature element: queue ticket number ticks up periodically
 // to suggest live order activity across the platform.
@@ -21,103 +46,150 @@ if (ticketNumber && !window.matchMedia("(prefers-reduced-motion: reduce)").match
   }, 4000);
 }
 
-// Check whether the visitor is currently logged in as a vendor, and if so,
-// swap the "Vendor Login" nav/footer links to point to the dashboard instead.
-// Runs on every page that includes main.js, so it stays consistent site-wide
-// without needing to duplicate this logic into each HTML file.
-async function checkVendorSession() {
+// =========================================================
+// SITE-WIDE SESSION-AWARE NAVIGATION
+//
+// A browser session is authenticated as exactly ONE role at a time
+// (single JWT cookie) — you can never be "logged in as both a vendor
+// and a patron" simultaneously. So the account area of the nav should
+// reflect exactly one of three states: guest, vendor, or patron.
+// =========================================================
+
+const navApiBaseUrl = "http://localhost:3000";
+
+async function getCurrentSessionRole() {
   try {
-    const response = await fetch("http://localhost:3000/api/auth/me", {
+    const vendorRes = await fetch(`${navApiBaseUrl}/api/auth/me`, {
       method: "GET",
       credentials: "include",
     });
-
-    if (response.status !== 200) {
-      return; // not logged in — leave nav as-is
-    }
-
-    // Find every link that currently points to vendor-login.html
-    // (nav links and footer links both use this href) and repurpose them
-    const loginLinks = document.querySelectorAll('a[href="vendor-login.html"]');
-
-    loginLinks.forEach((link) => {
-      link.href = "vendor-dashboard.html";
-
-      // Preserve the numbered stall-no span if this is a nav link, only
-      // replace the trailing text label
-      const stallNo = link.querySelector(".stall-no");
-      if (stallNo) {
-        link.innerHTML = "";
-        link.appendChild(stallNo);
-        link.append("Dashboard");
-      } else {
-        link.textContent = "Dashboard";
-      }
-    });
-
-    // A logged-in vendor has no reason to see sign-up links — hide them
-    // from the nav and footer entirely, on every page.
-    const signupLinks = document.querySelectorAll(
-      'a[href="vendor-register.html"], a[href="patron-register.html"]'
-    );
-    signupLinks.forEach((link) => {
-      link.style.display = "none";
-    });
-
-    // On the homepage specifically, the dual sign-up CTA band no longer
-    // makes sense either — swap it for a "go to your dashboard" prompt.
-    const ctaBand = document.getElementById("ctaBand");
-    if (ctaBand) {
-      ctaBand.innerHTML = `
-        <div class="cta-band-inner" style="text-align: center;">
-          <h2>Welcome back!</h2>
-          <p>Head to your dashboard to manage orders, menu items, and check your stall's performance.</p>
-          <a href="vendor-dashboard.html" class="btn btn-primary">Go to Dashboard</a>
-        </div>
-      `;
+    if (vendorRes.status === 200) {
+      const data = await vendorRes.json();
+      return { role: "vendor", user: data.vendor };
     }
   } catch (error) {
-    // Fails silently — if the server's unreachable, just leave the nav
-    // showing "Vendor Login" as the safe default
-    console.error("Session check failed:", error);
+    console.error("Vendor session check failed:", error);
   }
-}
 
-checkVendorSession();
-
-// Same idea as checkVendorSession, but for patrons: swaps "Patron Login"
-// to "My Orders" and hides the "Patron Sign Up" link when already logged in.
-async function checkPatronSession() {
   try {
-    const response = await fetch("http://localhost:3000/api/auth/me/patron", {
+    const patronRes = await fetch(`${navApiBaseUrl}/api/auth/me/patron`, {
       method: "GET",
       credentials: "include",
     });
-
-    if (response.status !== 200) {
-      return; // not logged in as a patron — leave nav as-is
+    if (patronRes.status === 200) {
+      const data = await patronRes.json();
+      return { role: "patron", user: data.patron };
     }
-
-    const loginLinks = document.querySelectorAll('a[href="patron-login.html"]');
-    loginLinks.forEach((link) => {
-      link.href = "patron-orders.html";
-      const stallNo = link.querySelector(".stall-no");
-      if (stallNo) {
-        link.innerHTML = "";
-        link.appendChild(stallNo);
-        link.append("My Orders");
-      } else {
-        link.textContent = "My Orders";
-      }
-    });
-
-    const signupLinks = document.querySelectorAll('a[href="patron-register.html"]');
-    signupLinks.forEach((link) => {
-      link.style.display = "none";
-    });
   } catch (error) {
     console.error("Patron session check failed:", error);
   }
+
+  return { role: "guest", user: null };
 }
 
-checkPatronSession();
+async function handleNavLogout() {
+  try {
+    await fetch(`${navApiBaseUrl}/api/auth/logout`, { method: "POST", credentials: "include" });
+  } catch (error) {
+    console.error("Error logging out:", error);
+  } finally {
+    window.location.href = "index.html";
+  }
+}
+
+// Replaces the entire Sign Up / Log In dropdown area with a single
+// account pill + logout button, for whichever role is currently logged in.
+function renderLoggedInAuthArea(dashboardHref, dashboardLabel) {
+  if (!boardAuth) return;
+
+  // Preserve the cart icon (if present on this page) rather than wiping it
+  // out along with the Sign Up / Log In dropdowns
+  const cartIcon = document.getElementById("cartIconLink");
+  const cartIconHtml = cartIcon ? cartIcon.outerHTML : "";
+
+  boardAuth.innerHTML = `
+    <a href="${dashboardHref}" class="btn-nav-account">${dashboardLabel}</a>
+    <button type="button" class="btn-nav-logout" id="navLogoutBtn">Log Out</button>
+    ${cartIconHtml}
+  `;
+
+  document.getElementById("navLogoutBtn").addEventListener("click", handleNavLogout);
+
+  if (typeof updateCartBadge === "function") {
+    updateCartBadge();
+  }
+}
+
+function updateCtaBandForVendor() {
+  const ctaBand = document.getElementById("ctaBand");
+  if (!ctaBand) return;
+  ctaBand.innerHTML = `
+    <div class="cta-band-inner" style="text-align: center;">
+      <h2>Welcome back!</h2>
+      <p>Head to your dashboard to manage orders, menu items, and check your stall's performance.</p>
+      <a href="vendor-dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+  `;
+}
+
+function updateCtaBandForPatron() {
+  const ctaBand = document.getElementById("ctaBand");
+  if (!ctaBand) return;
+  ctaBand.innerHTML = `
+    <div class="cta-band-inner" style="text-align: center;">
+      <h2>Welcome back!</h2>
+      <p>Check your order history, favourite stalls, and loyalty points.</p>
+      <a href="patron-orders.html" class="btn btn-primary">Go to My Orders</a>
+    </div>
+  `;
+}
+
+// If this guest has any orders tracked in sessionStorage (placed earlier
+// in this same tab), show a "Track Orders" link in the nav so they can get
+// back to guest-orders.html from anywhere on the site — not just the
+// checkout success screen.
+function addGuestTrackOrdersLink() {
+  if (!boardAuth || document.getElementById("guestTrackOrdersLink")) return;
+
+  let orderIds = [];
+  try {
+    const raw = sessionStorage.getItem("hawkerhub_guest_order_ids");
+    orderIds = raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    console.error("Error reading guest order IDs:", error);
+  }
+
+  if (orderIds.length === 0) return;
+
+  const trackLink = document.createElement("a");
+  trackLink.href = "guest-orders.html";
+  trackLink.id = "guestTrackOrdersLink";
+  trackLink.className = "auth-dropdown-toggle";
+  trackLink.textContent = `Track Orders (${orderIds.length})`;
+
+  // Insert it before the cart icon if present, otherwise just append
+  const cartIcon = document.getElementById("cartIconLink");
+  if (cartIcon) {
+    boardAuth.insertBefore(trackLink, cartIcon);
+  } else {
+    boardAuth.appendChild(trackLink);
+  }
+}
+
+async function applySessionAwareNav() {
+  const { role } = await getCurrentSessionRole();
+
+  if (role === "vendor") {
+    renderLoggedInAuthArea("vendor-dashboard.html", "Dashboard");
+    updateCtaBandForVendor();
+  } else if (role === "patron") {
+    renderLoggedInAuthArea("patron-orders.html", "My Orders");
+    updateCtaBandForPatron();
+  } else {
+    // role === "guest": leave the Sign Up / Log In dropdowns as they are,
+    // but still surface a way back to their order tracking if they have any
+    addGuestTrackOrdersLink();
+  }
+}
+
+applySessionAwareNav();
