@@ -6,6 +6,12 @@ async function registerVendor(req, res) {
   try {
     const { business_name, email, phone, password, hawker_centre_id, stall_number } = req.body;
 
+    // The banner image is required — multer (uploadBannerImage middleware)
+    // runs before this controller and populates req.file if one was sent
+    if (!req.file) {
+      return res.status(400).json({ error: "A stall banner image is required." });
+    }
+
     // Check if the email is already registered
     const existingUser = await vendorModel.findUserByEmail(email);
     if (existingUser) {
@@ -15,6 +21,9 @@ async function registerVendor(req, res) {
     // Hash the password before storing it
     const password_hash = await bcrypt.hash(password, 10);
 
+    // Store the path relative to the uploads folder (not the full disk path)
+    const banner_image = `banners/${req.file.filename}`;
+
     const newVendor = await vendorModel.createVendor({
       business_name,
       email,
@@ -22,6 +31,7 @@ async function registerVendor(req, res) {
       password_hash,
       hawker_centre_id,
       stall_number,
+      banner_image,
     });
 
     // TODO: Send confirmation email (mock for now, nodemailer later)
@@ -66,6 +76,7 @@ async function getDashboard(req, res) {
     // Reshape the recent orders into the format the dashboard UI expects
     const recentOrders = overview.recent_orders.map((order) => ({
       id: `ORD-${order.order_id}`,
+      order_id: order.order_id, // raw numeric id, needed for the status update dropdown
       item: order.items || "(no items recorded)",
       customer: order.customer,
       status: order.order_status,
@@ -89,7 +100,33 @@ async function getDashboard(req, res) {
   }
 }
 
+const ALLOWED_ORDER_STATUSES = ["pending", "preparing", "completed", "cancelled"];
+
+// Update the status of one of this vendor's orders (e.g. pending -> completed)
+async function updateOrderStatus(req, res) {
+  try {
+    const { status } = req.body;
+    const orderId = req.params.id;
+
+    if (!ALLOWED_ORDER_STATUSES.includes(status)) {
+      return res.status(400).json({ error: `Status must be one of: ${ALLOWED_ORDER_STATUSES.join(", ")}` });
+    }
+
+    const updated = await vendorModel.updateOrderStatus(orderId, req.vendor.id, status);
+
+    if (!updated) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order status updated" });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error updating order status" });
+  }
+}
+
 module.exports = {
   registerVendor,
   getDashboard,
+  updateOrderStatus,
 };

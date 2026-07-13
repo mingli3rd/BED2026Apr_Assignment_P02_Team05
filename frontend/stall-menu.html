@@ -20,7 +20,7 @@
 
       <nav class="board-nav" aria-label="Main navigation">
         <a href="index.html" class="board-link"><span class="stall-no">01</span>Home</a>
-        <a href="stall-menu.html" class="board-link is-active"><span class="stall-no">02</span>Order</a>
+        <a href="stalls.html" class="board-link is-active"><span class="stall-no">02</span>Order</a>
         <a href="hygiene.html" class="board-link"><span class="stall-no">03</span>Hygiene Grades</a>
         <a href="credit.html" class="board-link"><span class="stall-no">04</span>Credits</a>
       </nav>
@@ -53,6 +53,8 @@
 
   <main>
     <section class="stall-menu-section">
+      <a href="stalls.html" class="back-to-stalls-link">← Back to Stalls</a>
+
       <img src="images/stall-banner.svg" alt="" class="stall-banner-img" />
 
       <div class="stall-menu-header">
@@ -60,23 +62,38 @@
           <p class="eyebrow" id="stallEyebrow">Loading stall...</p>
           <h1 class="section-title" id="stallName">—</h1>
         </div>
-
-        <div class="stall-picker">
-          <label for="stallSelect">Switch Stall</label>
-          <select id="stallSelect"></select>
-        </div>
       </div>
+
+      <!-- Search within this stall's menu -->
+      <div class="menu-search-bar">
+        <input type="text" id="menuSearchInput" placeholder="Search this menu..." />
+      </div>
+
+      <!-- Category filter chips -->
+      <div class="category-chips" id="categoryChips"></div>
 
       <div id="menuLoading" class="dashboard-loading">Loading menu...</div>
       <div id="menuError" class="form-message is-warning" style="display:none;"></div>
 
       <div id="menuGrid" class="stall-item-grid"></div>
+
+      <div id="menuNoResults" class="dash-empty-state" style="display:none;">
+        <p>No items match your search.</p>
+      </div>
     </section>
   </main>
 
-  <!-- Add-on selection modal -->
-  <div id="addOnModal" class="modal-overlay" style="display:none;">
-    <div class="modal-card">
+  <!-- Floating cart bar, appears once the cart has items -->
+  <a href="cart.html" class="floating-cart-bar" id="floatingCartBar" style="display:none;">
+    <span class="floating-cart-count" id="floatingCartCount">0 items</span>
+    <span class="floating-cart-total" id="floatingCartTotal">$0.00</span>
+    <span class="floating-cart-cta">View Cart →</span>
+  </a>
+
+  <!-- Add-on selection bottom sheet -->
+  <div id="addOnModal" class="sheet-overlay" style="display:none;">
+    <div class="sheet-card">
+      <div class="sheet-handle"></div>
       <h3 id="modalItemName">Item</h3>
       <p class="modal-item-price" id="modalItemPrice"></p>
 
@@ -84,12 +101,16 @@
 
       <div class="field">
         <label for="modalQuantity">Quantity</label>
-        <input type="number" id="modalQuantity" min="1" max="50" value="1" />
+        <div class="qty-stepper">
+          <button type="button" class="qty-stepper-btn" id="modalQtyMinus">−</button>
+          <input type="number" id="modalQuantity" min="1" max="50" value="1" readonly />
+          <button type="button" class="qty-stepper-btn" id="modalQtyPlus">+</button>
+        </div>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-primary" id="modalAddBtn">Add to Cart — <span id="modalTotalPrice">$0.00</span></button>
-        <button class="btn btn-ghost" id="modalCancelBtn">Cancel</button>
+        <button class="btn btn-primary btn-full" id="modalAddBtn">Add to Cart — <span id="modalTotalPrice">$0.00</span></button>
+        <button class="btn btn-ghost btn-full" id="modalCancelBtn">Cancel</button>
       </div>
     </div>
   </div>

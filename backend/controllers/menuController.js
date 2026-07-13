@@ -28,13 +28,32 @@ async function createMenuItem(req, res) {
     const { name, price, category, cuisine_ids } = req.body;
     const vendorId = req.vendor.id;
 
+    // A photo is required for every new menu item — multer (uploadMenuItemImage
+    // middleware) runs before this controller and populates req.file
+    if (!req.file) {
+      return res.status(400).json({ error: "An item photo is required." });
+    }
+
     // Reject duplicate item names for this vendor
     const isDuplicate = await menuModel.findDuplicateByName(vendorId, name);
     if (isDuplicate) {
       return res.status(409).json({ error: "You already have a menu item with this name." });
     }
 
-    const newItemId = await menuModel.createMenuItem(vendorId, { name, price, category, cuisine_ids });
+    // With multipart form data, repeated fields (multiple selected cuisines)
+    // may arrive as a single string or an array depending on how many were
+    // checked — normalize to an array either way
+    const cuisineIdsArray = Array.isArray(cuisine_ids) ? cuisine_ids : cuisine_ids ? [cuisine_ids] : [];
+
+    const image = `menu-items/${req.file.filename}`;
+
+    const newItemId = await menuModel.createMenuItem(vendorId, {
+      name,
+      price,
+      category,
+      cuisine_ids: cuisineIdsArray,
+      image,
+    });
     res.status(201).json({ id: newItemId, message: "Menu item created successfully" });
   } catch (error) {
     console.error("Controller error:", error);
@@ -55,7 +74,18 @@ async function updateMenuItem(req, res) {
       return res.status(409).json({ error: "You already have a menu item with this name." });
     }
 
-    await menuModel.updateMenuItem(itemId, vendorId, { name, price, category, cuisine_ids });
+    const cuisineIdsArray = Array.isArray(cuisine_ids) ? cuisine_ids : cuisine_ids ? [cuisine_ids] : [];
+
+    // Image is optional on update — only replaced if a new file was chosen
+    const image = req.file ? `menu-items/${req.file.filename}` : null;
+
+    await menuModel.updateMenuItem(itemId, vendorId, {
+      name,
+      price,
+      category,
+      cuisine_ids: cuisineIdsArray,
+      image,
+    });
     res.status(200).json({ message: "Menu item updated successfully" });
   } catch (error) {
     console.error("Controller error:", error);

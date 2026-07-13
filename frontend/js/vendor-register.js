@@ -30,9 +30,16 @@ vendorRegisterForm.addEventListener("submit", async (event) => {
   const hawker_centre_id = document.getElementById("hawkerCentreId").value;
   const stall_number = document.getElementById("stallNumber").value.trim();
   const password = document.getElementById("password").value;
+  const bannerFile = document.getElementById("bannerImage").files[0];
 
   if (!business_name || !email || !phone || !hawker_centre_id || !stall_number || !password) {
     messageDiv.textContent = "All fields are required.";
+    messageDiv.className = "form-message is-warning";
+    return;
+  }
+
+  if (!bannerFile) {
+    messageDiv.textContent = "Please upload a photo of your stall.";
     messageDiv.className = "form-message is-warning";
     return;
   }
@@ -41,19 +48,21 @@ vendorRegisterForm.addEventListener("submit", async (event) => {
   submitBtn.textContent = "Registering...";
 
   try {
+    // FormData is used instead of JSON here because we're sending a file
+    // alongside the text fields — don't set a Content-Type header manually,
+    // the browser sets the correct multipart boundary automatically
+    const formData = new FormData();
+    formData.append("business_name", business_name);
+    formData.append("email", email);
+    formData.append("phone", phone);
+    formData.append("password", password);
+    formData.append("hawker_centre_id", hawker_centre_id);
+    formData.append("stall_number", stall_number);
+    formData.append("banner_image", bannerFile);
+
     const response = await fetch(`${apiBaseUrl}/api/auth/vendor/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        business_name,
-        email,
-        phone,
-        password,
-        hawker_centre_id: parseInt(hawker_centre_id),
-        stall_number,
-      }),
+      body: formData,
     });
 
     if (response.status === 201) {

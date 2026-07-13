@@ -30,7 +30,7 @@ const { validateMenuItem } = require("./middlewares/menuValidation");
 // --- Rental Agreements ---
 const rentalController = require("./controllers/rentalController");
 
-// --- Public Stall Browsing ---
+// --- Public Stall / Hawker Centre Browsing ---
 const stallController = require("./controllers/stallController");
 
 // --- Cart ---
@@ -39,6 +39,9 @@ const { validateCartItem, validateCheckout } = require("./middlewares/cartValida
 
 // --- Checkout / Orders ---
 const checkoutController = require("./controllers/checkoutController");
+
+// --- Image Uploads ---
+const { uploadBannerImage, uploadMenuItemImage } = require("./config/upload");
 
 
 // Create Express app
@@ -56,8 +59,14 @@ app.use(cookieParser()); // Parse cookies (needed to read the JWT auth cookie)
 // backend, then into frontend, to serve index.html, css, js, etc.
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
+// --- Serve uploaded vendor/menu images ---
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // ===================== VENDOR ROUTES =====================
-app.post("/api/auth/vendor/register", validateVendorRegister, vendorController.registerVendor);
+// uploadBannerImage runs first to parse the multipart form data
+// (text fields + the banner file), process/auto-orient the image, then
+// hand off to validation and the controller
+app.post("/api/auth/vendor/register", ...uploadBannerImage, validateVendorRegister, vendorController.registerVendor);
 
 // ===================== PATRON ROUTES =====================
 app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron);
@@ -71,6 +80,7 @@ app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatro
 // ===================== PROTECTED VENDOR ROUTES =====================
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
+app.put("/api/vendor/orders/:id/status", verifyVendorToken, vendorController.updateOrderStatus);
 
 // ===================== PROTECTED PATRON ROUTES =====================
 app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders);
@@ -78,17 +88,20 @@ app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrder
 // ===================== MENU MANAGEMENT ROUTES (vendor-facing) =====================
 app.get("/api/vendor/menu", verifyVendorToken, menuController.listMenuItems);
 app.get("/api/vendor/menu/:id/cuisines", verifyVendorToken, menuController.getItemCuisines);
-app.post("/api/vendor/menu", verifyVendorToken, validateMenuItem, menuController.createMenuItem);
-app.put("/api/vendor/menu/:id", verifyVendorToken, validateMenuItem, menuController.updateMenuItem);
+app.post("/api/vendor/menu", verifyVendorToken, ...uploadMenuItemImage, validateMenuItem, menuController.createMenuItem);
+app.put("/api/vendor/menu/:id", verifyVendorToken, ...uploadMenuItemImage, validateMenuItem, menuController.updateMenuItem);
 app.delete("/api/vendor/menu/:id", verifyVendorToken, menuController.deleteMenuItem);
 app.get("/api/cuisines", verifyVendorToken, menuController.listCuisines);
 
 // ===================== RENTAL AGREEMENT ROUTES =====================
 app.get("/api/vendor/rental-agreements", verifyVendorToken, rentalController.listRentalAgreements);
 
-// ===================== PUBLIC STALL BROWSING (guests + patrons) =====================
+// ===================== PUBLIC STALL / HAWKER CENTRE BROWSING (guests + patrons) =====================
 app.get("/api/stalls", stallController.listStalls);
 app.get("/api/stalls/:vendorId/menu", stallController.getStallMenu);
+app.get("/api/hawker-centres", stallController.listHawkerCentres);
+app.get("/api/hawker-centres/search", stallController.searchHawkerCentres);
+app.get("/api/hawker-centres/:id/stalls", stallController.getHawkerCentreStalls);
 
 // ===================== CART (logged-in patrons only — guests use localStorage) =====================
 app.post("/api/cart", verifyPatronToken, validateCartItem, cartController.addToCart);

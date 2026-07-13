@@ -72,7 +72,10 @@ function renderMenuTable(items) {
     .map(
       (item) => `
         <tr>
-          <td>${item.name}</td>
+          <td class="menu-table-item-cell">
+            <img src="${item.image ? "/uploads/" + item.image : "images/dish-default.svg"}" alt="" class="menu-table-thumb" />
+            ${item.name}
+          </td>
           <td class="mono">$${Number(item.price).toFixed(2)}</td>
           <td class="muted">${item.category || "—"}</td>
           <td class="muted">${item.cuisines || "—"}</td>
@@ -128,6 +131,8 @@ function resetForm() {
   itemIdInput.value = "";
   menuItemForm.reset();
   document.querySelectorAll(".cuisine-checkbox").forEach((cb) => (cb.checked = false));
+  document.getElementById("itemImagePreview").style.display = "none";
+  document.getElementById("itemImageHint").textContent = "Required for new items. JPEG, PNG, or WebP, max 5MB.";
   formMessage.textContent = "";
   formMessage.className = "form-message";
 }
@@ -149,6 +154,14 @@ async function openEditForm(itemId, items) {
   itemNameInput.value = item.name;
   itemPriceInput.value = item.price;
   itemCategoryInput.value = item.category || "";
+
+  // Show the item's current photo, and make it clear a new upload is optional
+  if (item.image) {
+    const preview = document.getElementById("itemImagePreview");
+    preview.src = `/uploads/${item.image}`;
+    preview.style.display = "block";
+  }
+  document.getElementById("itemImageHint").textContent = "Leave blank to keep the current photo. JPEG, PNG, or WebP, max 5MB.";
 
   // Fetch this item's currently assigned cuisine IDs to check the right boxes
   try {
@@ -179,13 +192,13 @@ menuItemForm.addEventListener("submit", async (event) => {
 
   const itemId = itemIdInput.value;
   const isEditing = Boolean(itemId);
+  const imageFile = document.getElementById("itemImage").files[0];
 
-  const payload = {
-    name: itemNameInput.value.trim(),
-    price: parseFloat(itemPriceInput.value),
-    category: itemCategoryInput.value,
-    cuisine_ids: getSelectedCuisineIds(),
-  };
+  if (!isEditing && !imageFile) {
+    formMessage.textContent = "Please upload a photo for this item.";
+    formMessage.className = "form-message is-warning";
+    return;
+  }
 
   const saveBtn = document.getElementById("saveItemBtn");
   saveBtn.disabled = true;
@@ -195,11 +208,21 @@ menuItemForm.addEventListener("submit", async (event) => {
     const url = isEditing ? `${apiBaseUrl}/api/vendor/menu/${itemId}` : `${apiBaseUrl}/api/vendor/menu`;
     const method = isEditing ? "PUT" : "POST";
 
+    // FormData instead of JSON since we're sending a file — the browser
+    // sets the correct multipart Content-Type header automatically
+    const formData = new FormData();
+    formData.append("name", itemNameInput.value.trim());
+    formData.append("price", parseFloat(itemPriceInput.value));
+    formData.append("category", itemCategoryInput.value);
+    getSelectedCuisineIds().forEach((id) => formData.append("cuisine_ids", id));
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
     const response = await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(payload),
+      body: formData,
     });
 
     if (response.status === 200 || response.status === 201) {
@@ -254,6 +277,15 @@ async function handleDelete(itemId) {
 }
 
 // --- Wire up buttons ---
+document.getElementById("itemImage").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  const preview = document.getElementById("itemImagePreview");
+  if (file) {
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+  }
+});
+
 document.getElementById("addItemBtn").addEventListener("click", openAddForm);
 document.getElementById("cancelFormBtn").addEventListener("click", closeForm);
 

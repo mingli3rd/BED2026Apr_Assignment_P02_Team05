@@ -15,6 +15,7 @@ async function getMenuItemsByVendor(vendorId) {
         mi.name,
         mi.price,
         mi.category,
+        mi.image,
         mi.created_at,
         STUFF((
           SELECT ', ' + c.name
@@ -112,10 +113,11 @@ async function createMenuItem(vendorId, itemData) {
     insertRequest.input("name", sql.VarChar, itemData.name.trim());
     insertRequest.input("price", sql.Decimal(6, 2), itemData.price);
     insertRequest.input("category", sql.VarChar, itemData.category || null);
+    insertRequest.input("image", sql.VarChar, itemData.image || null);
 
     const insertResult = await insertRequest.query(`
-      INSERT INTO MenuItems (vendor_id, name, price, category)
-      VALUES (@vendor_id, @name, @price, @category);
+      INSERT INTO MenuItems (vendor_id, name, price, category, image)
+      VALUES (@vendor_id, @name, @price, @category, @image);
       SELECT SCOPE_IDENTITY() AS id;
     `);
     const newItemId = insertResult.recordset[0].id;
@@ -148,7 +150,9 @@ async function createMenuItem(vendorId, itemData) {
   }
 }
 
-// Update an existing menu item and replace its cuisine links
+// Update an existing menu item and replace its cuisine links. The image is
+// only updated if a new one was uploaded (itemData.image truthy) — editing
+// an item without choosing a new photo keeps the existing one intact.
 async function updateMenuItem(menuItemId, vendorId, itemData) {
   let connection;
   try {
@@ -161,11 +165,19 @@ async function updateMenuItem(menuItemId, vendorId, itemData) {
     updateRequest.input("price", sql.Decimal(6, 2), itemData.price);
     updateRequest.input("category", sql.VarChar, itemData.category || null);
 
-    await updateRequest.query(`
+    let updateQuery = `
       UPDATE MenuItems
       SET name = @name, price = @price, category = @category
-      WHERE id = @id AND vendor_id = @vendor_id
-    `);
+    `;
+
+    if (itemData.image) {
+      updateRequest.input("image", sql.VarChar, itemData.image);
+      updateQuery += `, image = @image`;
+    }
+
+    updateQuery += ` WHERE id = @id AND vendor_id = @vendor_id`;
+
+    await updateRequest.query(updateQuery);
 
     // Replace cuisine links: delete existing, then re-insert the new set
     const deleteRequest = connection.request();

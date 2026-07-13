@@ -1,16 +1,123 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
-// List all approved vendors (for the stall picker on the browse page)
-async function getApprovedVendors() {
+// List all approved vendors (for the stall picker on the browse page).
+// Optionally filtered by hawker_centre_id or location, for the location filter.
+async function getApprovedVendors(hawkerCentreId, location, search) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+
+    let query = `
+      SELECT v.id, v.business_name, v.stall_number, v.banner_image, hc.id AS hawker_centre_id, hc.name AS hawker_centre_name, hc.location
+      FROM Vendors v
+      LEFT JOIN HawkerCentres hc ON v.hawker_centre_id = hc.id
+      WHERE v.approval_status = 'approved'
+    `;
+
+    if (hawkerCentreId) {
+      request.input("hawker_centre_id", sql.Int, hawkerCentreId);
+      query += ` AND v.hawker_centre_id = @hawker_centre_id`;
+    }
+
+    if (location) {
+      request.input("location", sql.VarChar, location);
+      query += ` AND hc.location = @location`;
+    }
+
+    if (search) {
+      request.input("search", sql.VarChar, `%${search}%`);
+      query += ` AND v.business_name LIKE @search`;
+    }
+
+    query += ` ORDER BY v.business_name ASC`;
+
+    const result = await request.query(query);
+    return result.recordset;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
+    }
+  }
+}
+
+// Search hawker centres by name and/or location, with a count of how many
+// approved stalls are currently at each — this powers the "Find a Stall"
+// directory's search results.
+async function searchHawkerCentres(search, location) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+
+    let query = `
+      SELECT
+        hc.id,
+        hc.name,
+        hc.location,
+        COUNT(v.id) AS stall_count
+      FROM HawkerCentres hc
+      LEFT JOIN Vendors v ON v.hawker_centre_id = hc.id AND v.approval_status = 'approved'
+      WHERE 1 = 1
+    `;
+
+    if (search) {
+      request.input("search", sql.VarChar, `%${search}%`);
+      query += ` AND (hc.name LIKE @search OR hc.location LIKE @search)`;
+    }
+
+    if (location) {
+      request.input("location", sql.VarChar, location);
+      query += ` AND hc.location = @location`;
+    }
+
+    query += ` GROUP BY hc.id, hc.name, hc.location ORDER BY hc.name ASC`;
+
+    const result = await request.query(query);
+    return result.recordset;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
+    }
+  }
+}
+
+// Get a single hawker centre's info (for the header of the "stalls in this
+// centre" page)
+async function getHawkerCentreById(hawkerCentreId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("id", sql.Int, hawkerCentreId);
+    const result = await request.query(`
+      SELECT id, name, location FROM HawkerCentres WHERE id = @id
+    `);
+    return result.recordset[0] || null;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
+    }
+  }
+}
+
+// List all hawker centres (for populating the location filter dropdown)
+async function getHawkerCentres() {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
     const result = await connection.request().query(`
-      SELECT id, business_name, stall_number
-      FROM Vendors
-      WHERE approval_status = 'approved'
-      ORDER BY business_name ASC
+      SELECT id, name, location FROM HawkerCentres ORDER BY location, name
     `);
     return result.recordset;
   } catch (error) {
@@ -31,7 +138,7 @@ async function getVendorInfo(vendorId) {
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     const result = await request.query(`
-      SELECT id, business_name, stall_number
+      SELECT id, business_name, stall_number, banner_image
       FROM Vendors
       WHERE id = @vendor_id AND approval_status = 'approved'
     `);
@@ -55,7 +162,7 @@ async function getActiveMenuByVendor(vendorId) {
     request.input("vendor_id", sql.Int, vendorId);
 
     const itemsResult = await request.query(`
-      SELECT id, name, price, category
+      SELECT id, name, price, category, image
       FROM MenuItems
       WHERE vendor_id = @vendor_id AND is_active = 1
       ORDER BY category, name
@@ -92,6 +199,9 @@ async function getActiveMenuByVendor(vendorId) {
 
 module.exports = {
   getApprovedVendors,
+  getHawkerCentres,
+  searchHawkerCentres,
+  getHawkerCentreById,
   getVendorInfo,
   getActiveMenuByVendor,
 };

@@ -36,8 +36,8 @@ async function createVendor(vendorData) {
   try {
     connection = await sql.connect(dbConfig);
     const query = `
-      INSERT INTO Vendors (business_name, email, phone, password_hash, role, hawker_centre_id, stall_number, approval_status)
-      VALUES (@business_name, @email, @phone, @password_hash, @role, @hawker_centre_id, @stall_number, @approval_status);
+      INSERT INTO Vendors (business_name, email, phone, password_hash, role, hawker_centre_id, stall_number, approval_status, banner_image)
+      VALUES (@business_name, @email, @phone, @password_hash, @role, @hawker_centre_id, @stall_number, @approval_status, @banner_image);
       SELECT SCOPE_IDENTITY() AS id;
     `;
     const request = connection.request();
@@ -49,6 +49,7 @@ async function createVendor(vendorData) {
     request.input("hawker_centre_id", sql.Int, vendorData.hawker_centre_id || null);
     request.input("stall_number", sql.VarChar, vendorData.stall_number || null);
     request.input("approval_status", sql.VarChar, "pending");
+    request.input("banner_image", sql.VarChar, vendorData.banner_image || null);
 
     const result = await request.query(query);
 
@@ -74,7 +75,7 @@ async function getVendorById(id) {
   try {
     connection = await sql.connect(dbConfig);
     const query = `
-      SELECT id, business_name, email, phone, role, hawker_centre_id, stall_number, approval_status, created_at
+      SELECT id, business_name, email, phone, role, hawker_centre_id, stall_number, approval_status, banner_image, created_at
       FROM Vendors
       WHERE id = @id
     `;
@@ -151,13 +152,13 @@ async function getVendorOverview(vendorId) {
       WHERE vendor_id = @vendor_id AND order_status = 'pending'
     `);
 
-    // Menu item count
+    // Menu item count (only active items — soft-deleted ones shouldn't count)
     const menuRequest = connection.request();
     menuRequest.input("vendor_id", sql.Int, vendorId);
     const menuResult = await menuRequest.query(`
       SELECT COUNT(*) AS menu_items
       FROM MenuItems
-      WHERE vendor_id = @vendor_id
+      WHERE vendor_id = @vendor_id AND is_active = 1
     `);
 
     // Average rating across all feedback
@@ -224,10 +225,42 @@ async function getVendorOverview(vendorId) {
   }
 }
 
+// Update an order's status — only allowed if the order actually belongs
+// to this vendor (checked via WHERE ... AND vendor_id = @vendor_id), so a
+// vendor can never touch another stall's orders even by guessing an ID
+async function updateOrderStatus(orderId, vendorId, newStatus) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("id", sql.Int, orderId);
+    request.input("vendor_id", sql.Int, vendorId);
+    request.input("status", sql.VarChar, newStatus);
+
+    const result = await request.query(`
+      UPDATE Orders SET order_status = @status WHERE id = @id AND vendor_id = @vendor_id;
+      SELECT @@ROWCOUNT AS affected;
+    `);
+    return result.recordset[0].affected > 0;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
+    }
+  }
+}
+
 module.exports = {
   findUserByEmail,
   createVendor,
   getVendorById,
   getVendorAuthByEmail,
   getVendorOverview,
+  updateOrderStatus,
 };

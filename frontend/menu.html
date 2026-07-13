@@ -96,6 +96,13 @@
             </div>
 
             <div class="field">
+              <label for="itemImage">Item Photo</label>
+              <input type="file" id="itemImage" accept="image/jpeg,image/png,image/webp" />
+              <span class="field-hint" id="itemImageHint">Required for new items. JPEG, PNG, or WebP, max 5MB.</span>
+              <img id="itemImagePreview" src="" alt="" style="display:none; width:80px; height:80px; border-radius:50%; object-fit:cover; margin-top:8px;" />
+            </div>
+
+            <div class="field">
               <label>Cuisines</label>
               <div id="cuisineCheckboxes" class="cuisine-checkbox-grid">
                 <!-- injected by JS -->

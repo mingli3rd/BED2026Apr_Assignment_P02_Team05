@@ -21,7 +21,7 @@
 
       <nav class="board-nav" aria-label="Main navigation">
         <a href="index.html" class="board-link "><span class="stall-no">01</span>Home</a>
-        <a href="stall-menu.html" class="board-link "><span class="stall-no">02</span>Order</a>
+        <a href="stalls.html" class="board-link "><span class="stall-no">02</span>Order</a>
         <a href="hygiene.html" class="board-link "><span class="stall-no">03</span>Hygiene Grades</a>
         <a href="credit.html" class="board-link "><span class="stall-no">04</span>Credits</a>
       </nav>
@@ -122,6 +122,12 @@
               <label for="password">Password</label>
               <input type="password" id="password" placeholder="Min. 8 characters, letters and numbers" required />
               <span class="field-hint">At least 8 characters, with letters and numbers.</span>
+            </div>
+
+            <div class="field">
+              <label for="bannerImage">Stall Photo</label>
+              <input type="file" id="bannerImage" accept="image/jpeg,image/png,image/webp" required />
+              <span class="field-hint">A photo of your stall or signature dish. JPEG, PNG, or WebP, max 5MB.</span>
             </div>
 
             <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Register Stall</button>

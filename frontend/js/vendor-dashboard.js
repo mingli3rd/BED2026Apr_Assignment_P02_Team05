@@ -9,7 +9,10 @@ const statusClassMap = {
   pending: "status-pending",
   preparing: "status-preparing",
   completed: "status-completed",
+  cancelled: "status-expired",
 };
+
+const ORDER_STATUS_OPTIONS = ["pending", "preparing", "completed", "cancelled"];
 
 function renderOrdersTable(orders) {
   const tbody = document.getElementById("ordersTableBody");
@@ -28,17 +31,61 @@ function renderOrdersTable(orders) {
   tbody.innerHTML = orders
     .map((order) => {
       const statusClass = statusClassMap[order.status] || "status-pending";
+      const optionsHtml = ORDER_STATUS_OPTIONS.map(
+        (s) => `<option value="${s}" ${s === order.status ? "selected" : ""}>${s}</option>`
+      ).join("");
+
       return `
         <tr>
           <td class="mono">${order.id}</td>
           <td>${order.item}</td>
           <td>${order.customer}</td>
-          <td><span class="status-badge ${statusClass}">${order.status}</span></td>
+          <td>
+            <select class="status-select ${statusClass}" data-order-id="${order.order_id}">
+              ${optionsHtml}
+            </select>
+          </td>
           <td class="mono muted">${order.time}</td>
         </tr>
       `;
     })
     .join("");
+
+  // Wire up status dropdowns
+  tbody.querySelectorAll(".status-select").forEach((select) => {
+    select.addEventListener("change", () => handleStatusChange(select));
+  });
+}
+
+async function handleStatusChange(selectEl) {
+  const orderId = selectEl.dataset.orderId;
+  const newStatus = selectEl.value;
+  const previousClass = selectEl.className;
+
+  selectEl.disabled = true;
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/vendor/orders/${orderId}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (response.status === 200) {
+      // Update the dropdown's colour to match the new status
+      const newClass = statusClassMap[newStatus] || "status-pending";
+      selectEl.className = `status-select ${newClass}`;
+    } else {
+      throw new Error(`Unexpected status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    alert("Could not update order status. Please try again.");
+    selectEl.className = previousClass; // revert visual state on failure
+  } finally {
+    selectEl.disabled = false;
+  }
 }
 
 async function loadDashboard() {

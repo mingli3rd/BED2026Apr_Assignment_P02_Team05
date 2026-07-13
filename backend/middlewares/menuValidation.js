@@ -13,7 +13,7 @@ const menuItemSchema = Joi.object({
     "any.required": "Price is required",
   }),
   category: Joi.string().max(50).allow("").optional(),
-  cuisine_ids: Joi.array().items(Joi.number().integer()).optional(),
+  cuisine_ids: Joi.array().items(Joi.number().integer()).single().optional(),
 });
 
 function validateMenuItem(req, res, next) {
