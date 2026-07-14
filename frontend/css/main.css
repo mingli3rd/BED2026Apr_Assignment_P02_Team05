@@ -2053,18 +2053,48 @@ img {
 
 .toast {
   position: fixed;
-  bottom: 24px;
+  top: 90px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--mustard);
-  color: var(--teal-shadow);
+  background-color: var(--teal-shadow);
+  color: var(--chalk);
+  border: 1px solid var(--mustard);
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
   padding: 12px 22px;
   border-radius: 100px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
   z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: toast-slide-down 0.25s ease-out;
+}
+
+.toast::before {
+  content: "✓";
+  color: var(--mustard);
+  font-weight: 700;
+}
+
+@keyframes toast-slide-down {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .toast {
+    top: 76px;
+    max-width: calc(100% - 40px);
+    text-align: center;
+  }
 }
 
 /* =========================================================
@@ -2906,4 +2936,34 @@ img {
   background-color: var(--mustard);
   color: var(--teal-shadow);
   font-weight: 700;
+}
+
+/* =========================================================
+   FIX: .btn-ghost text was invisible (chalk-on-chalk) inside
+   light-background containers like the bottom sheet, since
+   its default color matches the site's usual dark backgrounds
+========================================================= */
+
+.sheet-card .btn-ghost,
+.permit-card .btn-ghost {
+  color: var(--teal-shadow);
+  border-color: rgba(14, 33, 28, 0.25);
+}
+
+.sheet-card .btn-ghost:hover,
+.permit-card .btn-ghost:hover {
+  border-color: var(--stool-red);
+  color: var(--stool-red);
+}
+
+.cart-line-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.cart-line-item {
+  align-items: center;
 }

@@ -9,10 +9,31 @@
 // from directly.
 //
 // Cart item shape:
-// { menu_item_id, vendor_id, vendor_name, name, price, quantity, add_ons: [{id, name, extra_price}] }
+// { menu_item_id, vendor_id, vendor_name, name, price, category, image, quantity, add_ons: [{id, name, extra_price}] }
 // =========================================================
 
 const CART_STORAGE_KEY = "hawkerhub_cart";
+
+// Category-based fallback icon, used whenever an item has no real uploaded
+// photo. Shared here so both the stall menu page and the cart page render
+// items consistently.
+function getCategoryImage(category) {
+  const normalized = (category || "").toLowerCase();
+  if (normalized === "main") return "images/dish-main.svg";
+  if (normalized === "side") return "images/dish-side.svg";
+  if (normalized === "drink") return "images/dish-drink.svg";
+  if (normalized === "dessert") return "images/dish-dessert.svg";
+  return "images/dish-default.svg";
+}
+
+// Prefers a real uploaded photo (item.image, from the database) over the
+// generic category icon
+function getItemImage(item) {
+  if (item.image) {
+    return `/uploads/${item.image}`;
+  }
+  return getCategoryImage(item.category);
+}
 
 function getCart() {
   try {

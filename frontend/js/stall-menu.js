@@ -37,21 +37,8 @@ function getVendorIdFromUrl() {
   return params.get("vendor_id");
 }
 
-function getCategoryImage(category) {
-  const normalized = (category || "").toLowerCase();
-  if (normalized === "main") return "images/dish-main.svg";
-  if (normalized === "side") return "images/dish-side.svg";
-  if (normalized === "drink") return "images/dish-drink.svg";
-  if (normalized === "dessert") return "images/dish-dessert.svg";
-  return "images/dish-default.svg";
-}
-
-function getItemImage(item) {
-  if (item.image) {
-    return `/uploads/${item.image}`;
-  }
-  return getCategoryImage(item.category);
-}
+// getCategoryImage() and getItemImage() are now defined in cart-store.js
+// (shared across stall-menu.html, cart.html, and checkout.html)
 
 // --- Category chips ---
 function renderCategoryChips(menu) {
@@ -273,6 +260,8 @@ document.getElementById("modalAddBtn").addEventListener("click", () => {
     vendor_name: stallName,
     name: modalItem.name,
     price: modalItem.price,
+    category: modalItem.category,
+    image: modalItem.image,
     quantity,
     add_ons: selectedAddOns,
   });
@@ -285,7 +274,7 @@ document.getElementById("modalAddBtn").addEventListener("click", () => {
 function showToast(message) {
   const toast = document.getElementById("toast");
   toast.textContent = message;
-  toast.style.display = "block";
+  toast.style.display = "flex";
   setTimeout(() => {
     toast.style.display = "none";
   }, 2500);

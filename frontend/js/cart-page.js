@@ -38,6 +38,7 @@ function renderCartPage() {
                 const addOnsText = (item.add_ons || []).map((a) => a.name).join(", ");
                 return `
                   <div class="cart-line-item">
+                    <img src="${getItemImage(item)}" alt="" class="cart-line-img" />
                     <div class="cart-line-info">
                       <span class="cart-line-name">${item.name}</span>
                       ${addOnsText ? `<span class="muted cart-line-addons">+ ${addOnsText}</span>` : ""}
