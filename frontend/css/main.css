@@ -2776,3 +2776,134 @@ img {
   background-color: var(--teal-shadow);
   color: var(--chalk);
 }
+
+/* =========================================================
+   HYGIENE GRADE BADGES (patron-facing pages)
+========================================================= */
+
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.grade-badge.grade-a {
+  background-color: rgba(31, 122, 77, 0.16);
+  color: #4fbf8c;
+}
+
+.grade-badge.grade-b {
+  background-color: rgba(232, 163, 61, 0.16);
+  color: var(--mustard);
+}
+
+.grade-badge.grade-c {
+  background-color: rgba(201, 123, 61, 0.16);
+  color: #C97B3D;
+}
+
+.grade-badge.grade-d {
+  background-color: rgba(214, 73, 51, 0.16);
+  color: var(--stool-red);
+}
+
+.directory-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* =========================================================
+   CUSTOM FILTER DROPDOWN (replaces native <select> for a
+   consistent, fully-stylable look)
+========================================================= */
+
+.filter-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.filter-dropdown-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background-color: var(--teal-shadow);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--chalk);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.filter-dropdown-toggle:hover,
+.filter-dropdown.is-open .filter-dropdown-toggle {
+  border-color: var(--mustard);
+}
+
+.filter-dropdown .chevron {
+  font-size: 11px;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.filter-dropdown.is-open .chevron {
+  transform: rotate(180deg);
+}
+
+.filter-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: var(--teal-shadow);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 70;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.filter-dropdown.is-open .filter-dropdown-menu {
+  display: flex;
+}
+
+.filter-dropdown-option {
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--chalk);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.filter-dropdown-option:hover {
+  background-color: var(--teal-mid);
+}
+
+.filter-dropdown-option.is-active {
+  background-color: var(--mustard);
+  color: var(--teal-shadow);
+  font-weight: 700;
+}

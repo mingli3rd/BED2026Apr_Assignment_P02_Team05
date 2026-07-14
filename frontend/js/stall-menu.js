@@ -1,4 +1,31 @@
 const apiBaseUrl = "http://localhost:3000";
+const neaApiBaseUrl = "http://localhost:4000";
+
+function gradeClass(grade) {
+  return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "";
+}
+
+// Fetches this specific stall's current hygiene grade from the NEA
+// service. Degrades gracefully — if the NEA service is offline or the
+// stall has no grade yet, the badge just stays hidden.
+async function loadStallGrade(vendorId) {
+  const badge = document.getElementById("stallGradeBadge");
+  try {
+    const response = await fetch(`${neaApiBaseUrl}/api/nea/public/hygiene-grades`);
+    if (response.status !== 200) return;
+
+    const grades = await response.json();
+    const match = grades.find((g) => g.vendor_id === parseInt(vendorId));
+
+    if (match && match.grade) {
+      badge.textContent = match.grade;
+      badge.className = `grade-badge ${gradeClass(match.grade)}`;
+      badge.style.display = "inline-block";
+    }
+  } catch (error) {
+    console.error("Error loading hygiene grade (NEA service may be offline):", error);
+  }
+}
 
 let currentVendorId = null;
 let currentMenu = [];
@@ -143,6 +170,7 @@ async function loadStallMenu(vendorId) {
       document.getElementById("stallEyebrow").textContent = `Stall ${data.vendor.stall_number}`;
       document.getElementById("stallName").textContent = data.vendor.business_name;
       updateStallBanner(vendorId, data.vendor.banner_image);
+      loadStallGrade(vendorId);
 
       renderCategoryChips(currentMenu);
       renderMenu(currentMenu);

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Inspections — NEA Officer Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div class="portal-shell">
+    <aside class="portal-sidebar">
+      <div class="portal-badge">
+        <span class="login-badge-mark">NEA</span>
+        <span class="login-badge-text" style="color:white;">Officer Portal</span>
+      </div>
+
+      <nav class="portal-nav">
+        <a href="dashboard.html" class="portal-nav-link">Overview</a>
+        <a href="new-inspection.html" class="portal-nav-link">New Inspection</a>
+        <a href="inspections.html" class="portal-nav-link is-active">My Inspections</a>
+      </nav>
+
+      <div class="portal-sidebar-footer">
+        <span class="portal-officer-name" id="officerName">Loading...</span>
+        <button class="portal-logout-btn" id="logoutBtn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="portal-main">
+      <p class="portal-eyebrow">My Inspections</p>
+      <h1 class="portal-title">Full inspection history.</h1>
+
+      <div class="portal-panel">
+        <table class="portal-table" id="inspectionsTable">
+          <thead>
+            <tr>
+              <th>Stall</th>
+              <th>Score</th>
+              <th>Grade</th>
+              <th>Remarks</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="inspectionsTableBody"></tbody>
+        </table>
+
+        <div id="emptyState" class="portal-empty-state" style="display:none;">
+          <p>No inspections recorded yet.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/inspections.js"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 const apiBaseUrl = "http://localhost:3000";
 
 let searchDebounceTimer = null;
+let activeLocationFilter = "";
 
 async function loadLocationFilter() {
   try {
@@ -9,12 +10,13 @@ async function loadLocationFilter() {
 
     const locations = [...new Set(centres.map((c) => c.location))].sort();
 
-    const filterSelect = document.getElementById("locationFilter");
-    filterSelect.innerHTML =
-      `<option value="">All Locations</option>` +
-      locations.map((loc) => `<option value="${loc}">${loc}</option>`).join("");
+    const options = [
+      { value: "", label: "All Locations" },
+      ...locations.map((loc) => ({ value: loc, label: loc })),
+    ];
 
-    filterSelect.addEventListener("change", () => {
+    createFilterDropdown("locationFilter", options, "All Locations", (value) => {
+      activeLocationFilter = value;
       loadHawkerCentres();
     });
   } catch (error) {
@@ -54,14 +56,13 @@ function renderHawkerCentreCards(centres) {
 
 async function loadHawkerCentres() {
   const search = document.getElementById("searchInput").value.trim();
-  const location = document.getElementById("locationFilter").value;
 
   document.getElementById("stallsLoading").style.display = "block";
 
   try {
     const params = new URLSearchParams();
     if (search) params.append("search", search);
-    if (location) params.append("location", location);
+    if (activeLocationFilter) params.append("location", activeLocationFilter);
 
     const response = await fetch(`${apiBaseUrl}/api/hawker-centres/search?${params.toString()}`);
     const centres = await response.json();

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — NEA Officer Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div class="portal-shell">
+    <aside class="portal-sidebar">
+      <div class="portal-badge">
+        <span class="login-badge-mark">NEA</span>
+        <span class="login-badge-text" style="color:white;">Officer Portal</span>
+      </div>
+
+      <nav class="portal-nav">
+        <a href="dashboard.html" class="portal-nav-link is-active">Overview</a>
+        <a href="new-inspection.html" class="portal-nav-link">New Inspection</a>
+        <a href="inspections.html" class="portal-nav-link">My Inspections</a>
+      </nav>
+
+      <div class="portal-sidebar-footer">
+        <span class="portal-officer-name" id="officerName">Loading...</span>
+        <button class="portal-logout-btn" id="logoutBtn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="portal-main">
+      <div id="loading" class="portal-empty-state">Loading dashboard...</div>
+      <div id="errorMessage" class="form-message is-warning" style="display:none;"></div>
+
+      <div id="content" style="display:none;">
+        <p class="portal-eyebrow">Dashboard</p>
+        <h1 class="portal-title" id="welcomeHeading">Welcome back.</h1>
+
+        <div class="portal-stats-grid">
+          <div class="portal-stat-card">
+            <div class="stat-label">Total Inspections</div>
+            <div class="stat-value" id="totalInspections">0</div>
+          </div>
+          <div class="portal-stat-card">
+            <div class="stat-label">Inspections This Week</div>
+            <div class="stat-value" id="weekInspections">0</div>
+          </div>
+          <div class="portal-stat-card">
+            <div class="stat-label">Average Score Issued</div>
+            <div class="stat-value" id="avgScore">—</div>
+          </div>
+        </div>
+
+        <div class="portal-panel">
+          <div class="portal-panel-header">
+            <h2>Recent Inspections</h2>
+            <a href="inspections.html" style="font-size:13px; color:var(--blue); font-weight:600;">View All →</a>
+          </div>
+
+          <table class="portal-table" id="recentTable">
+            <thead>
+              <tr>
+                <th>Stall</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="recentTableBody"></tbody>
+          </table>
+
+          <div id="recentEmptyState" class="portal-empty-state" style="display:none;">
+            <p>No inspections recorded yet.</p>
+          </div>
+        </div>
+
+        <div class="portal-panel">
+          <a href="new-inspection.html" class="btn btn-primary">+ Record New Inspection</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

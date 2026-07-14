@@ -1,0 +1,437 @@
+/* =========================================================
+   NEA OFFICER PORTAL — design tokens
+   Clean government admin aesthetic: navy sidebar, white
+   content cards, blue accent. Deliberately distinct from the
+   consumer-facing hawker site.
+========================================================= */
+
+:root {
+  --navy: #14283D;
+  --navy-light: #1E3A54;
+  --blue: #0B5FA5;
+  --blue-hover: #094D87;
+  --bg: #F4F6F8;
+  --white: #FFFFFF;
+  --text: #1A1A1A;
+  --muted: #5A6B7A;
+  --line: #E1E6EB;
+  --green: #1F7A4D;
+  --amber: #B8770F;
+  --red: #C23E2A;
+
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* =========================================================
+   LOGIN PAGE
+========================================================= */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--navy);
+  padding: 20px;
+}
+
+.login-card {
+  background-color: var(--white);
+  border-radius: var(--radius);
+  padding: 40px 36px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+
+.login-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.login-badge-mark {
+  background-color: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+
+.login-badge-text {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy);
+}
+
+.login-card h1 {
+  font-size: 22px;
+  margin: 0 0 6px;
+  color: var(--navy);
+}
+
+.login-card p.subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 11px 13px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(11, 95, 165, 0.12);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--blue);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background-color: var(--blue-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.form-message {
+  font-size: 13px;
+  margin: 12px 0 0;
+  min-height: 18px;
+}
+
+.form-message.is-warning {
+  color: var(--amber);
+}
+
+.form-message.is-error {
+  color: var(--red);
+}
+
+.form-message.is-success {
+  color: var(--green);
+}
+
+/* =========================================================
+   DASHBOARD SHELL
+========================================================= */
+
+.portal-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.portal-sidebar {
+  background-color: var(--navy);
+  color: var(--white);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+  padding: 0 6px;
+}
+
+.portal-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.portal-nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  padding: 11px 14px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.portal-nav-link:hover {
+  background-color: var(--navy-light);
+  color: var(--white);
+}
+
+.portal-nav-link.is-active {
+  background-color: var(--blue);
+  color: var(--white);
+}
+
+.portal-sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.portal-officer-name {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  padding: 0 6px;
+}
+
+.portal-logout-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.portal-logout-btn:hover {
+  background-color: rgba(255,255,255,0.08);
+}
+
+.portal-main {
+  padding: 36px 44px;
+  max-width: 1100px;
+}
+
+.portal-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 6px;
+}
+
+.portal-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 28px;
+}
+
+/* --- Stat cards --- */
+
+.portal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.portal-stat-card {
+  background-color: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+}
+
+.portal-stat-card .stat-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.portal-stat-card .stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-top: 8px;
+}
+
+/* --- Panel --- */
+
+.portal-panel {
+  background-color: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  margin-bottom: 24px;
+}
+
+.portal-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.portal-panel-header h2 {
+  font-size: 17px;
+  margin: 0;
+  color: var(--navy);
+}
+
+.portal-empty-state {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* --- Table --- */
+
+.portal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.portal-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--line);
+}
+
+.portal-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.grade-a { background-color: rgba(31,122,77,0.12); color: var(--green); }
+.grade-b { background-color: rgba(11,95,165,0.12); color: var(--blue); }
+.grade-c { background-color: rgba(184,119,15,0.12); color: var(--amber); }
+.grade-d { background-color: rgba(194,62,42,0.12); color: var(--red); }
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* --- New inspection form --- */
+
+.score-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-preview {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 20px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  min-width: 60px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .portal-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-sidebar {
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+  }
+
+  .portal-nav {
+    flex-direction: row;
+  }
+
+  .portal-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-main {
+    padding: 24px 20px;
+  }
+}
