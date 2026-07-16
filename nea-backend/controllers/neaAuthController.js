@@ -40,7 +40,6 @@ async function login(req, res) {
         id: officer.id,
         name: officer.name,
         email: officer.email,
-        badge_number: officer.badge_number,
       },
     });
   } catch (error) {
