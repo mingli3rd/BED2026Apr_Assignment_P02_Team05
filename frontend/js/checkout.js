@@ -1,5 +1,6 @@
 const apiBaseUrl = "http://localhost:3000";
 const PACKAGING_FEE_PER_ITEM = 0.30;
+redirectIfVendor();
 
 function renderCheckoutSummary() {
   const cart = getCart();

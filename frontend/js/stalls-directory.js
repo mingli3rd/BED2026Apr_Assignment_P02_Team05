@@ -1,4 +1,5 @@
 const apiBaseUrl = "http://localhost:3000";
+redirectIfVendor();
 
 let searchDebounceTimer = null;
 let activeLocationFilter = "";

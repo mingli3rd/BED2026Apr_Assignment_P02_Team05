@@ -43,6 +43,10 @@ const checkoutController = require("./controllers/checkoutController");
 // --- Image Uploads ---
 const { uploadBannerImage, uploadMenuItemImage } = require("./config/upload");
 
+// --- Feedback ---
+const feedbackController = require("./controllers/feedbackController");
+const { validateFeedback } = require("./middlewares/feedbackValidation");
+
 
 // Create Express app
 const app = express();
@@ -114,6 +118,11 @@ app.delete("/api/cart", verifyPatronToken, cartController.clearCart);
 app.post("/api/orders", validateCheckout, checkoutController.createOrder);
 app.post("/api/guest/checkout", validateCheckout, checkoutController.createOrder); // alias, same handler — explicit endpoint for guest checkout per spec
 app.get("/api/guest/orders", checkoutController.getGuestOrders);
+
+// ===================== FEEDBACK (patron-facing) =====================
+app.post("/api/patron/feedback", verifyPatronToken, validateFeedback, feedbackController.submitFeedback);
+app.get("/api/patron/feedback/ordered-vendors", verifyPatronToken, feedbackController.getOrderedVendors);
+app.get("/api/patron/feedback/mine", verifyPatronToken, feedbackController.getMyFeedback);
 
 // Start server
 app.listen(port, () => {

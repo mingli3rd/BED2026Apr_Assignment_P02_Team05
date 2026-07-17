@@ -182,6 +182,20 @@ async function applySessionAwareNav() {
   if (role === "vendor") {
     renderLoggedInAuthArea("vendor-dashboard.html", "Dashboard");
     updateCtaBandForVendor();
+
+    // Vendors run a stall, they don't order from one — hide the "Order"
+    // nav link and cart icon entirely rather than showing UI they
+    // shouldn't (and can't meaningfully) use
+    document.querySelectorAll('a[href="stalls.html"]').forEach((link) => {
+      // Only hide the nav/footer "Order" links, not links that happen to
+      // point elsewhere but share this href by coincidence
+      if (link.closest(".board-nav") || link.closest(".footer-links")) {
+        link.style.display = "none";
+      }
+    });
+    const cartIcon = document.getElementById("cartIconLink");
+    if (cartIcon) cartIcon.style.display = "none";
+
   } else if (role === "patron") {
     renderLoggedInAuthArea("patron-orders.html", "My Orders");
     updateCtaBandForPatron();

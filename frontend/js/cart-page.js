@@ -1,3 +1,4 @@
+redirectIfVendor();
 function renderCartPage() {
   const cart = getCart();
   const groupsContainer = document.getElementById("cartGroups");

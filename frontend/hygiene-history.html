@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hygiene Grades — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-shell">
+
+    <aside class="dash-sidebar">
+      <a href="index.html" class="board-logo dash-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="dash-nav" aria-label="Dashboard navigation">
+        <a href="vendor-dashboard.html" class="dash-nav-link">
+          <span class="stall-no">01</span> Overview
+        </a>
+        <a href="menu.html" class="dash-nav-link">
+          <span class="stall-no">02</span> Menu
+        </a>
+        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+          <span class="stall-no">03</span> Orders
+        </a>
+        <a href="rental-agreements.html" class="dash-nav-link">
+          <span class="stall-no">04</span> Rental Agreements
+        </a>
+        <a href="hygiene-history.html" class="dash-nav-link is-active">
+          <span class="stall-no">05</span> Hygiene Grades
+        </a>
+        <a href="stall-performance.html" class="dash-nav-link">
+          <span class="stall-no">06</span> Performance
+        </a>
+      </nav>
+
+      <div class="dash-sidebar-footer">
+        <a href="index.html" class="dash-nav-link dash-back-link">← Back to Site</a>
+        <button id="logoutBtn" class="dash-logout-btn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="dash-main">
+
+      <div id="dashboardLoading" class="dashboard-loading">Loading hygiene grade history...</div>
+      <div id="dashboardError" class="form-message is-warning" style="display:none;"></div>
+
+      <div id="dashboardContent" class="dashboard-content" style="display:none;">
+
+        <div class="dash-header">
+          <div>
+            <p class="eyebrow">Hygiene Grades</p>
+            <h1 class="dash-welcome">Your inspection history.</h1>
+          </div>
+          <span class="grade-badge" id="currentGradeBadge" style="font-size:20px; width:44px; height:44px;"></span>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2>Grade History</h2>
+            <span class="dash-panel-note">Issued by NEA officers after each inspection</span>
+          </div>
+
+          <table class="dash-table" id="gradesTable">
+            <thead>
+              <tr>
+                <th>Grade</th>
+                <th>Score</th>
+                <th>Issued</th>
+                <th>Valid Until</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="gradesTableBody"></tbody>
+          </table>
+
+          <div id="gradesEmptyState" class="dash-empty-state" style="display:none;">
+            <p>No inspections recorded yet. Your first hygiene grade will appear here after an NEA officer inspects your stall.</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/hygiene-history.js"></script>
+</body>
+</html>

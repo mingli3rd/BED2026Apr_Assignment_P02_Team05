@@ -14,6 +14,23 @@
 
 const CART_STORAGE_KEY = "hawkerhub_cart";
 
+// Vendors run a stall, they don't order from one — any ordering page that
+// includes this check will redirect a logged-in vendor straight to their
+// dashboard instead of letting them browse/order.
+async function redirectIfVendor() {
+  try {
+    const response = await fetch("http://localhost:3000/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+    });
+    if (response.status === 200) {
+      window.location.href = "vendor-dashboard.html";
+    }
+  } catch (error) {
+    // Not logged in as a vendor (or server unreachable) — let the page load normally
+  }
+}
+
 // Category-based fallback icon, used whenever an item has no real uploaded
 // photo. Shared here so both the stall menu page and the cart page render
 // items consistently.

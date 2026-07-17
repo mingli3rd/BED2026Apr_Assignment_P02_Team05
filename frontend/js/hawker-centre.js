@@ -1,5 +1,6 @@
 const apiBaseUrl = "http://localhost:3000";
 const neaApiBaseUrl = "http://localhost:4000";
+redirectIfVendor();
 
 let allStalls = []; // full unfiltered list, with grades merged in
 let activeGradeFilter = "";

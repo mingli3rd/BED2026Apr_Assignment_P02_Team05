@@ -146,7 +146,9 @@ async function getOrdersByPatron(patronId) {
         o.order_status,
         o.total_amount,
         o.created_at,
+        v.id AS vendor_id,
         v.business_name AS vendor_name,
+        v.banner_image,
         STUFF((
           SELECT ', ' + mi.name + CASE WHEN oi.quantity > 1 THEN ' x' + CAST(oi.quantity AS VARCHAR) ELSE '' END
           FROM OrderItems oi
