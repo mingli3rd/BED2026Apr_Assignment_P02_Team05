@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Inspection — NEA Officer Portal</title>
+  <title>Schedule Inspection — NEA Officer Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/main.css" />
@@ -19,7 +19,8 @@
 
       <nav class="portal-nav">
         <a href="dashboard.html" class="portal-nav-link">Overview</a>
-        <a href="new-inspection.html" class="portal-nav-link is-active">New Inspection</a>
+        <a href="new-inspection.html" class="portal-nav-link is-active">Schedule Inspection</a>
+        <a href="conduct-inspection.html" class="portal-nav-link">Conduct &amp; Log</a>
         <a href="inspections.html" class="portal-nav-link">My Inspections</a>
       </nav>
 
@@ -30,8 +31,8 @@
     </aside>
 
     <main class="portal-main">
-      <p class="portal-eyebrow">New Inspection</p>
-      <h1 class="portal-title">Record a stall inspection.</h1>
+      <p class="portal-eyebrow">Schedule Inspection</p>
+      <h1 class="portal-title">Assign an inspection visit.</h1>
 
       <div class="portal-panel" style="max-width: 560px;">
         <form id="inspectionForm" novalidate>
@@ -43,19 +44,11 @@
           </div>
 
           <div class="field">
-            <label for="scoreInput">Score (0–100)</label>
-            <div class="score-input-row">
-              <input type="number" id="scoreInput" min="0" max="100" placeholder="e.g. 85" required style="flex:1;" />
-              <span class="score-preview grade-a" id="gradePreview">—</span>
-            </div>
+            <label for="scheduledDateInput">Inspection Date</label>
+            <input type="date" id="scheduledDateInput" required />
           </div>
 
-          <div class="field">
-            <label for="remarksInput">Remarks</label>
-            <textarea id="remarksInput" rows="4" placeholder="Cleanliness observations, food handling notes, corrective actions required, etc."></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Submit Inspection</button>
+          <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Schedule Inspection</button>
 
           <p id="message" class="form-message" role="status" aria-live="polite"></p>
         </form>

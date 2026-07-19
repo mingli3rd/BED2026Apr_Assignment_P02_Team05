@@ -5,7 +5,6 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-// Load environment variables
 dotenv.config();
 
 const neaAuthController = require("./controllers/neaAuthController");
@@ -19,10 +18,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// This service runs on a different port/host than the main hawker hub app
-// (which lives on PORT, typically 3000), so cross-origin requests need
-// CORS explicitly enabled. `credentials: true` is required for the
-// nea_token cookie to be sent/received across origins.
 app.use(
   cors({
     origin: process.env.MAIN_APP_ORIGIN || "http://localhost:3000",
@@ -30,9 +25,7 @@ app.use(
   })
 );
 
-// --- Serve the NEA officer portal's own front-end ---
-// nea-backend/ and nea-frontend/ are sibling folders, same pattern as the
-// main app's backend/frontend split
+// Serve the NEA officer portal's own front-end
 app.use(express.static(path.join(__dirname, "..", "nea-frontend")));
 
 // ===================== NEA OFFICER AUTH =====================
@@ -40,16 +33,18 @@ app.post("/api/nea/auth/login", neaAuthController.login);
 app.post("/api/nea/auth/logout", neaAuthController.logout);
 app.get("/api/nea/auth/me", verifyOfficerToken, neaAuthController.getCurrentOfficer);
 
-// ===================== INSPECTIONS (officer-only) =====================
+// ===================== STALLS (for the schedule form's dropdown) =====================
 app.get("/api/nea/vendors", verifyOfficerToken, inspectionController.listVendorsForInspection);
-app.post("/api/nea/inspections", verifyOfficerToken, inspectionController.recordInspection);
-app.get("/api/nea/inspections/mine", verifyOfficerToken, inspectionController.getMyInspections);
-app.get("/api/nea/vendors/:vendorId/grades", verifyOfficerToken, inspectionController.getVendorGradeHistory);
 
-// ===================== PUBLIC HYGIENE GRADES =====================
-// No auth — this is what the main hawker hub site's public "Hygiene Grades"
-// page fetches from, across the port/origin boundary
-app.get("/api/nea/public/hygiene-grades", inspectionController.getPublicHygieneGrades);
+// ===================== HCMP-30: SCHEDULE INSPECTION =====================
+app.post("/api/nea/inspections", verifyOfficerToken, inspectionController.scheduleInspection);
+app.get("/api/nea/inspections/upcoming", verifyOfficerToken, inspectionController.listUpcomingInspections);
+
+// ===================== HCMP-31: CONDUCT & LOG INSPECTION =====================
+app.put("/api/nea/inspections/:id/result", verifyOfficerToken, inspectionController.logInspectionResult);
+
+// ===================== MY INSPECTIONS (history) =====================
+app.get("/api/nea/inspections/mine", verifyOfficerToken, inspectionController.getMyInspections);
 
 app.listen(port, () => {
   console.log(`NEA service running on port ${port}`);

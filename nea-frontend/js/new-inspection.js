@@ -1,21 +1,8 @@
 const apiBaseUrl = "http://localhost:4000";
 
-function scoreToGrade(score) {
-  if (score >= 90) return "A";
-  if (score >= 75) return "B";
-  if (score >= 60) return "C";
-  return "D";
-}
-
-function gradeClass(grade) {
-  return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "grade-d";
-}
-
 async function checkSession() {
-  console.log("checkSession() called");
   try {
     const response = await fetch(`${apiBaseUrl}/api/nea/auth/me`, { method: "GET", credentials: "include" });
-    console.log("checkSession response status:", response.status);
     if (response.status !== 200) {
       window.location.href = "login.html";
       return null;
@@ -31,10 +18,8 @@ async function checkSession() {
 }
 
 async function loadVendors() {
-  console.log("loadVendors() called");
   try {
     const response = await fetch(`${apiBaseUrl}/api/nea/vendors`, { method: "GET", credentials: "include" });
-    console.log("loadVendors response status:", response.status);
     const vendors = await response.json();
 
     const select = document.getElementById("vendorSelect");
@@ -48,27 +33,11 @@ async function loadVendors() {
   }
 }
 
-document.getElementById("scoreInput").addEventListener("input", (event) => {
-  const score = parseInt(event.target.value);
-  const preview = document.getElementById("gradePreview");
-
-  if (isNaN(score) || score < 0 || score > 100) {
-    preview.textContent = "—";
-    preview.className = "score-preview";
-    return;
-  }
-
-  const grade = scoreToGrade(score);
-  preview.textContent = grade;
-  preview.className = `score-preview ${gradeClass(grade)}`;
-});
-
 document.getElementById("inspectionForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const vendor_id = document.getElementById("vendorSelect").value;
-  const score = parseInt(document.getElementById("scoreInput").value);
-  const remarks = document.getElementById("remarksInput").value.trim();
+  const scheduled_date = document.getElementById("scheduledDateInput").value;
   const messageDiv = document.getElementById("message");
   const submitBtn = document.getElementById("submitBtn");
 
@@ -77,22 +46,21 @@ document.getElementById("inspectionForm").addEventListener("submit", async (even
     messageDiv.className = "form-message is-warning";
     return;
   }
-
-  if (isNaN(score) || score < 0 || score > 100) {
-    messageDiv.textContent = "Score must be a number between 0 and 100.";
+  if (!scheduled_date) {
+    messageDiv.textContent = "Please choose a date.";
     messageDiv.className = "form-message is-warning";
     return;
   }
 
   submitBtn.disabled = true;
-  submitBtn.textContent = "Submitting...";
+  submitBtn.textContent = "Scheduling...";
 
   try {
     const response = await fetch(`${apiBaseUrl}/api/nea/inspections`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ vendor_id: parseInt(vendor_id), score, remarks }),
+      body: JSON.stringify({ vendor_id: parseInt(vendor_id), scheduled_date }),
     });
 
     if (response.status === 201) {
@@ -100,10 +68,8 @@ document.getElementById("inspectionForm").addEventListener("submit", async (even
       messageDiv.textContent = data.message;
       messageDiv.className = "form-message is-success";
       document.getElementById("inspectionForm").reset();
-      document.getElementById("gradePreview").textContent = "—";
-      document.getElementById("gradePreview").className = "score-preview";
 
-    } else if (response.status === 400) {
+    } else if (response.status === 400 || response.status === 409) {
       const errorBody = await response.json();
       messageDiv.textContent = errorBody.error;
       messageDiv.className = "form-message is-warning";
@@ -113,13 +79,13 @@ document.getElementById("inspectionForm").addEventListener("submit", async (even
     }
 
   } catch (error) {
-    console.error("Error submitting inspection:", error);
+    console.error("Error scheduling inspection:", error);
     messageDiv.textContent = "Something went wrong. Please try again.";
     messageDiv.className = "form-message is-error";
 
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "Submit Inspection";
+    submitBtn.textContent = "Schedule Inspection";
   }
 });
 
@@ -133,12 +99,8 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
   }
 });
 
-console.log("new-inspection.js top-level code reached");
-
 (async function init() {
-  console.log("init() started");
   const officer = await checkSession();
-  console.log("checkSession() returned:", officer);
   if (officer) {
     loadVendors();
   }
