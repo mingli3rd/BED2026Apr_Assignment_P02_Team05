@@ -10,9 +10,14 @@ async function getApprovedVendors(hawkerCentreId, location, search) {
     const request = connection.request();
 
     let query = `
-      SELECT v.id, v.business_name, v.stall_number, v.banner_image, hc.id AS hawker_centre_id, hc.name AS hawker_centre_name, hc.location
+      SELECT
+        v.id, v.business_name, v.stall_number, v.banner_image,
+        hc.id AS hawker_centre_id, hc.name AS hawker_centre_name, hc.location,
+        ISNULL(AVG(CAST(f.rating AS FLOAT)), 0) AS avg_rating,
+        COUNT(f.id) AS review_count
       FROM Vendors v
       LEFT JOIN HawkerCentres hc ON v.hawker_centre_id = hc.id
+      LEFT JOIN Feedback f ON f.vendor_id = v.id
       WHERE v.approval_status = 'approved'
     `;
 
@@ -31,6 +36,7 @@ async function getApprovedVendors(hawkerCentreId, location, search) {
       query += ` AND v.business_name LIKE @search`;
     }
 
+    query += ` GROUP BY v.id, v.business_name, v.stall_number, v.banner_image, hc.id, hc.name, hc.location`;
     query += ` ORDER BY v.business_name ASC`;
 
     const result = await request.query(query);
@@ -138,9 +144,14 @@ async function getVendorInfo(vendorId) {
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     const result = await request.query(`
-      SELECT id, business_name, stall_number, banner_image
-      FROM Vendors
-      WHERE id = @vendor_id AND approval_status = 'approved'
+      SELECT
+        v.id, v.business_name, v.stall_number, v.banner_image,
+        ISNULL(AVG(CAST(f.rating AS FLOAT)), 0) AS avg_rating,
+        COUNT(f.id) AS review_count
+      FROM Vendors v
+      LEFT JOIN Feedback f ON f.vendor_id = v.id
+      WHERE v.id = @vendor_id AND v.approval_status = 'approved'
+      GROUP BY v.id, v.business_name, v.stall_number, v.banner_image
     `);
     return result.recordset[0] || null;
   } catch (error) {

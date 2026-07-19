@@ -47,6 +47,11 @@ const { uploadBannerImage, uploadMenuItemImage } = require("./config/upload");
 const feedbackController = require("./controllers/feedbackController");
 const { validateFeedback } = require("./middlewares/feedbackValidation");
 
+// --- Favourites & Profile ---
+const favouriteController = require("./controllers/favouriteController");
+const { validateFavourite, validateProfileUpdate } = require("./middlewares/favouriteValidation");
+const profileController = require("./controllers/profileController");
+
 
 // Create Express app
 const app = express();
@@ -123,6 +128,16 @@ app.get("/api/guest/orders", checkoutController.getGuestOrders);
 app.post("/api/patron/feedback", verifyPatronToken, validateFeedback, feedbackController.submitFeedback);
 app.get("/api/patron/feedback/ordered-vendors", verifyPatronToken, feedbackController.getOrderedVendors);
 app.get("/api/patron/feedback/mine", verifyPatronToken, feedbackController.getMyFeedback);
+
+// ===================== FAVOURITES (patron-facing) =====================
+app.post("/api/patron/favourites", verifyPatronToken, validateFavourite, favouriteController.addFavourite);
+app.delete("/api/patron/favourites/:vendorId", verifyPatronToken, favouriteController.removeFavourite);
+app.get("/api/patron/favourites/ids", verifyPatronToken, favouriteController.getFavouriteIds);
+app.get("/api/patron/favourites", verifyPatronToken, favouriteController.listFavourites);
+
+// ===================== PROFILE (patron-facing) =====================
+app.get("/api/patron/profile", verifyPatronToken, profileController.getProfile);
+app.put("/api/patron/profile", verifyPatronToken, validateProfileUpdate, profileController.updateProfile);
 
 // Start server
 app.listen(port, () => {

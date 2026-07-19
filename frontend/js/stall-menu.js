@@ -2,6 +2,57 @@ const apiBaseUrl = "http://localhost:3000";
 const neaApiBaseUrl = "http://localhost:4000";
 redirectIfVendor();
 
+// Checks whether this patron has already favourited the given vendor, and
+// sets the heart button's initial visual state accordingly
+async function setInitialLikeState(likeBtn, vendorId) {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/patron/favourites/ids`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (response.status !== 200) return;
+    const data = await response.json();
+    if (data.vendor_ids.includes(parseInt(vendorId))) {
+      likeBtn.classList.add("is-liked");
+    }
+  } catch (error) {
+    // Not logged in as a patron — button just stays unfilled
+  }
+}
+
+async function toggleStallFavourite(likeBtn) {
+  const vendorId = parseInt(likeBtn.dataset.vendorId);
+  const isLiked = likeBtn.classList.contains("is-liked");
+
+  try {
+    if (isLiked) {
+      const response = await fetch(`${apiBaseUrl}/api/patron/favourites/${vendorId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (response.status === 200) {
+        likeBtn.classList.remove("is-liked");
+      } else if (response.status === 401) {
+        window.location.href = "patron-login.html";
+      }
+    } else {
+      const response = await fetch(`${apiBaseUrl}/api/patron/favourites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ vendor_id: vendorId }),
+      });
+      if (response.status === 201) {
+        likeBtn.classList.add("is-liked");
+      } else if (response.status === 401) {
+        window.location.href = "patron-login.html";
+      }
+    }
+  } catch (error) {
+    console.error("Error toggling favourite:", error);
+  }
+}
+
 function gradeClass(grade) {
   return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "";
 }
@@ -159,6 +210,16 @@ async function loadStallMenu(vendorId) {
       document.getElementById("stallName").textContent = data.vendor.business_name;
       updateStallBanner(vendorId, data.vendor.banner_image);
       loadStallGrade(vendorId);
+
+      const ratingEl = document.getElementById("stallRating");
+      ratingEl.textContent = data.vendor.review_count > 0
+        ? `★ ${Number(data.vendor.avg_rating).toFixed(1)} average (${data.vendor.review_count} review${data.vendor.review_count === 1 ? "" : "s"})`
+        : "No reviews yet";
+
+      const likeBtn = document.getElementById("stallLikeBtn");
+      likeBtn.dataset.vendorId = vendorId;
+      await setInitialLikeState(likeBtn, vendorId);
+      likeBtn.onclick = () => toggleStallFavourite(likeBtn);
 
       renderCategoryChips(currentMenu);
       renderMenu(currentMenu);
