@@ -3,16 +3,6 @@ const jwt = require("jsonwebtoken");
 const vendorModel = require("../models/vendorModel");
 const patronModel = require("../models/patronModel");
 
-// Shared login endpoint for both vendors and patrons. Vendors and patrons
-// live in separate tables (Vendors / Patrons) with separate email
-// uniqueness constraints.
-//
-// If the request includes expected_role ("vendor" or "patron"), only that
-// table is checked — this is what each dedicated login page sends, so
-// entering a vendor's credentials on the Patron Login page correctly fails
-// with "Invalid email or password" instead of silently logging them in as
-// the wrong role. If expected_role is omitted, both tables are checked
-// (vendor first) as a fallback for any generic caller of this endpoint.
 async function login(req, res) {
   try {
     const { email, password, remember_me, expected_role } = req.body;

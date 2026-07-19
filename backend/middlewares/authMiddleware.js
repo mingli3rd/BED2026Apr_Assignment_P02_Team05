@@ -1,8 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-// Verifies the JWT stored in the "token" cookie.
-// If valid, attaches the decoded payload to req.vendor and calls next().
-// If missing/invalid, responds with 401 and stops the request from proceeding.
+
 function verifyVendorToken(req, res, next) {
   const token = req.cookies.token;
 
