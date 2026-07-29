@@ -1,4 +1,5 @@
 const inspectionModel = require("../models/inspectionModel");
+const hygieneGradeModel = require("../models/hygieneGradeModel");
 
 // GET /api/nea/vendors — stall dropdown for the Schedule Inspection form
 async function listVendorsForInspection(req, res) {
@@ -114,4 +115,6 @@ module.exports = {
   listUpcomingInspections,
   logInspectionResult,
   getMyInspections,
+  getVendorGradeHistory,
+  getPublicHygieneGrades,
 };
