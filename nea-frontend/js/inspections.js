@@ -47,15 +47,32 @@ async function loadInspections() {
 
     tbody.innerHTML = inspections
       .map((insp) => {
+        const isScheduled = insp.status === "scheduled";
+        const displayDate = new Date(isScheduled ? insp.scheduled_date : insp.conducted_at)
+          .toLocaleDateString("en-SG", { month: "short", day: "numeric", year: "numeric" });
+
+        if (isScheduled) {
+          return `
+            <tr>
+              <td>${insp.business_name}</td>
+              <td class="muted">Scheduled</td>
+              <td class="mono muted">—</td>
+              <td>—</td>
+              <td class="muted">—</td>
+              <td class="mono muted">${displayDate}</td>
+            </tr>
+          `;
+        }
+
         const grade = scoreToGrade(insp.score);
-        const date = new Date(insp.inspection_date).toLocaleDateString("en-SG", { month: "short", day: "numeric", year: "numeric" });
         return `
           <tr>
             <td>${insp.business_name}</td>
+            <td class="muted">Completed</td>
             <td class="mono">${insp.score}</td>
             <td><span class="grade-badge ${gradeClass(grade)}">${grade}</span></td>
             <td class="muted">${insp.remarks || "—"}</td>
-            <td class="mono muted">${date}</td>
+            <td class="mono muted">${displayDate}</td>
           </tr>
         `;
       })

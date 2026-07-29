@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conduct &amp; Log Inspection — NEA Officer Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div class="portal-shell">
+    <aside class="portal-sidebar">
+      <div class="portal-badge">
+        <span class="login-badge-mark">NEA</span>
+        <span class="login-badge-text" style="color:white;">Officer Portal</span>
+      </div>
+
+      <nav class="portal-nav">
+        <a href="dashboard.html" class="portal-nav-link">Overview</a>
+        <a href="new-inspection.html" class="portal-nav-link">Schedule Inspection</a>
+        <a href="conduct-inspection.html" class="portal-nav-link is-active">Conduct &amp; Log</a>
+        <a href="inspections.html" class="portal-nav-link">My Inspections</a>
+      </nav>
+
+      <div class="portal-sidebar-footer">
+        <span class="portal-officer-name" id="officerName">Loading...</span>
+        <button class="portal-logout-btn" id="logoutBtn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="portal-main">
+      <p class="portal-eyebrow">Conduct &amp; Log Inspection</p>
+      <h1 class="portal-title">Record the result of a scheduled visit.</h1>
+
+      <!-- STEP 1: pick which scheduled inspection to log -->
+      <div class="portal-panel" id="selectPanel" style="max-width: 640px;">
+        <div class="portal-panel-header">
+          <h2>Pick an Inspection</h2>
+        </div>
+
+        <table class="portal-table" id="upcomingTable">
+          <thead>
+            <tr>
+              <th>Stall</th>
+              <th>Scheduled Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="upcomingTableBody"></tbody>
+        </table>
+
+        <div id="upcomingEmptyState" class="portal-empty-state" style="display:none;">
+          <p>No scheduled inspections awaiting a result. Schedule one first.</p>
+        </div>
+      </div>
+
+      <!-- STEP 2: log the result — hidden until an inspection is picked -->
+      <div class="portal-panel" id="resultPanel" style="max-width: 560px; display:none;">
+        <div class="portal-panel-header">
+          <h2>Log Result — <span id="selectedStallName"></span></h2>
+        </div>
+
+        <form id="resultForm" novalidate>
+          <div class="field">
+            <label for="scoreInput">Score (0–100)</label>
+            <input type="number" id="scoreInput" min="0" max="100" placeholder="e.g. 85" required />
+          </div>
+
+          <div class="field">
+            <label for="remarksInput">Remarks</label>
+            <textarea id="remarksInput" rows="4" placeholder="Cleanliness observations, food handling notes, corrective actions required, etc."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Submit Result</button>
+          <button type="button" class="btn btn-full" id="cancelBtn" style="margin-top:8px; background:none; border:1px solid var(--line); color:var(--muted);">Cancel</button>
+
+          <p id="message" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/conduct-inspection.js"></script>
+</body>
+</html>
