@@ -37,7 +37,7 @@ function renderRecentTable(inspections) {
   const table = document.getElementById("recentTable");
   const emptyState = document.getElementById("recentEmptyState");
 
-  const recent = inspections.slice(0, 5);
+  const recent = inspections.filter((insp) => insp.status === "completed").slice(0, 5);
 
   if (recent.length === 0) {
     table.style.display = "none";
@@ -51,7 +51,7 @@ function renderRecentTable(inspections) {
   tbody.innerHTML = recent
     .map((insp) => {
       const grade = scoreToGrade(insp.score);
-      const date = new Date(insp.inspection_date).toLocaleDateString("en-SG", { month: "short", day: "numeric", year: "numeric" });
+      const date = new Date(insp.conducted_at).toLocaleDateString("en-SG", { month: "short", day: "numeric", year: "numeric" });
       return `
         <tr>
           <td>${insp.business_name}</td>
@@ -85,11 +85,12 @@ async function loadDashboard() {
 
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const weekCount = inspections.filter((i) => new Date(i.inspection_date) >= oneWeekAgo).length;
+    const weekCount = inspections.filter((i) => new Date(i.conducted_at) >= oneWeekAgo).length;
     document.getElementById("weekInspections").textContent = weekCount;
 
-    if (inspections.length > 0) {
-      const avg = inspections.reduce((sum, i) => sum + i.score, 0) / inspections.length;
+    const completedInspections = inspections.filter((i) => i.status === "completed");
+    if (completedInspections.length > 0) {
+      const avg = completedInspections.reduce((sum, i) => sum + i.score, 0) / completedInspections.length;
       document.getElementById("avgScore").textContent = avg.toFixed(1);
     }
 
