@@ -133,7 +133,7 @@ async function getPatronAuthByEmail(email) {
 
 // Get order history for a patron, with item names and vendor (stall) name
 // resolved, newest first — used for the "My Orders" page.
-async function getOrdersByPatron(patronId) {
+async function  getOrdersByPatron(patronId) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
