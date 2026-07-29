@@ -17,6 +17,8 @@ function renderSalesChart(dailyTrend) {
   const canvas = document.getElementById("salesChart");
   const emptyState = document.getElementById("salesEmptyState");
 
+  if (typeof Chart === "undefined") return; // charting library unavailable
+
   if (!dailyTrend || dailyTrend.length === 0) {
     canvas.style.display = "none";
     emptyState.style.display = "block";
@@ -60,6 +62,8 @@ function renderSalesChart(dailyTrend) {
 
 function renderRatingChart(distribution) {
   const canvas = document.getElementById("ratingChart");
+
+  if (typeof Chart === "undefined") return; // charting library unavailable
 
   const labels = distribution.map((d) => `${d.rating}★`);
   const counts = distribution.map((d) => d.count);
@@ -225,4 +229,49 @@ document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   }
 });
 
-loadPerformance();
+// Chart.js is loaded from a CDN in the HTML. On some networks a given CDN
+// can be blocked or fail to load, which would leave `Chart` undefined and
+// break the charts. This helper checks whether Chart.js actually loaded,
+// and if not, tries a series of alternative mirrors at runtime before
+// rendering — so the dashboard works without anyone manually downloading
+// a library file.
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function ensureChartJsLoaded() {
+  if (typeof Chart !== "undefined") return; // already loaded from the HTML tag
+
+  const mirrors = [
+    "https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js",
+    "https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js",
+  ];
+
+  for (const url of mirrors) {
+    try {
+      await loadScript(url);
+      if (typeof Chart !== "undefined") return; // success
+    } catch (error) {
+      // try the next mirror
+    }
+  }
+  throw new Error("Chart.js could not be loaded from any source.");
+}
+
+(async function init() {
+  try {
+    await ensureChartJsLoaded();
+  } catch (error) {
+    console.error(error);
+    // Charts won't render, but let loadPerformance still populate the
+    // stat cards and lists so the page isn't completely blank.
+  }
+  loadPerformance();
+})();

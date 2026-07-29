@@ -31,8 +31,6 @@ app.use(
 );
 
 // --- Serve the NEA officer portal's own front-end ---
-// nea-backend/ and nea-frontend/ are sibling folders, same pattern as the
-// main app's backend/frontend split
 app.use(express.static(path.join(__dirname, "..", "nea-frontend")));
 
 // ===================== NEA OFFICER AUTH =====================
@@ -47,13 +45,15 @@ app.get("/api/nea/inspections/mine", verifyOfficerToken, inspectionController.ge
 app.get("/api/nea/vendors/:vendorId/grades", verifyOfficerToken, inspectionController.getVendorGradeHistory);
 
 // ===================== PUBLIC HYGIENE GRADES =====================
-// No auth — this is what the main hawker hub site's public "Hygiene Grades"
-// page fetches from, across the port/origin boundary
+// No auth — consumed cross-origin by the main hawker hub site.
+// - /hygiene-grades         -> every approved vendor's current grade (patron badges/filter)
+// - /vendors/:id/grades     -> one vendor's full grade history (vendor's own Hygiene page)
 app.get("/api/nea/public/hygiene-grades", inspectionController.getPublicHygieneGrades);
+app.get("/api/nea/public/vendors/:vendorId/grades", inspectionController.getVendorGradeHistory);
 
 app.listen(port, () => {
   console.log(`NEA service running on port ${port}`);
-  console.log(`→ http://localhost:${port}`);
+  console.log(`-> http://localhost:${port}`);
 });
 
 process.on("SIGINT", async () => {

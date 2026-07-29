@@ -2,10 +2,10 @@ const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
 // Get a vendor's full hygiene grade history, newest first.
-// NOTE: updated to match the teammate's actual schema (issued_date /
-// expiry_date columns, Inspections.conducted_at for the inspection date)
-// — aliased back to valid_from / valid_to / inspection_date in the SELECT
-// so nothing downstream (API response shape, front-end code) needs to change.
+// Matches the teammate's schema (issued_date / expiry_date columns,
+// Inspections.conducted_at for the inspection date) — aliased back to
+// valid_from / valid_to / inspection_date in the SELECT so nothing
+// downstream (API response shape, front-end code) needs to change.
 async function getGradeHistoryByVendor(vendorId) {
   let connection;
   try {
@@ -39,7 +39,7 @@ async function getGradeHistoryByVendor(vendorId) {
 
 // Get every vendor's CURRENT (most recent) hygiene grade — used by the
 // public, no-auth endpoint that the main hawker hub site's patron-facing
-// pages (hawker-centre.js, stall-menu.js) fetch from cross-origin.
+// pages fetch from cross-origin.
 async function getCurrentGradesForAllVendors() {
   let connection;
   try {

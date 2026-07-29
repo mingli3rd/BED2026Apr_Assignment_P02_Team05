@@ -48,7 +48,9 @@ async function getMyInspections(req, res) {
   }
 }
 
-// Get a specific vendor's full hygiene grade history
+// Get a specific vendor's full hygiene grade history.
+// Used by BOTH the officer route (auth-protected) and the public route
+// (no auth) — same handler, since the data is the same either way.
 async function getVendorGradeHistory(req, res) {
   try {
     const history = await hygieneGradeModel.getGradeHistoryByVendor(req.params.vendorId);
