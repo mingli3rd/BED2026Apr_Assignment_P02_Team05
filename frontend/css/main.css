@@ -1486,11 +1486,36 @@ img {
 
 .chart-wrap {
   position: relative;
+  width: 100%;
   height: 260px;
 }
 
-.chart-wrap-small {
-  height: 220px;
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.dash-filter-group {
+  display: flex;
+  gap: 8px;
+}
+
+.dash-filter-btn {
+  background: transparent;
+  border: 1px solid rgba(245, 241, 230, 0.2);
+  color: var(--muted, #8FA69D);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dash-filter-btn.is-active {
+  background: #E8A33D;
+  border-color: #E8A33D;
+  color: #1F473D;
+  font-weight: 700;
 }
 
 .dash-list {
