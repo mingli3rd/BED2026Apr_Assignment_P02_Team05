@@ -44,7 +44,7 @@ const { validateCartItem, validateCheckout } = require("./middlewares/cartValida
 const checkoutController = require("./controllers/checkoutController");
 
 // --- Image Uploads ---
-const { uploadBannerImage, uploadMenuItemImage } = require("./config/upload");
+const { uploadBannerImage, uploadMenuItemImage, uploadRentalAgreementDocument } = require("./config/upload");
 
 // --- Feedback ---
 const feedbackController = require("./controllers/feedbackController");
@@ -94,6 +94,7 @@ app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatro
 
 // ===================== PROTECTED VENDOR ROUTES =====================
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard); //yeong jong
+app.get("/api/vendor/orders", verifyVendorToken, vendorController.listVendorOrders);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
 app.put("/api/vendor/orders/:id/status", verifyVendorToken, vendorController.updateOrderStatus);
 
@@ -110,6 +111,12 @@ app.get("/api/cuisines", verifyVendorToken, menuController.listCuisines);
 
 // ===================== RENTAL AGREEMENT ROUTES =====================
 app.get("/api/vendor/rental-agreements", verifyVendorToken, rentalController.listRentalAgreements);
+app.put(
+  "/api/vendor/rental-agreements/latest/document",
+  verifyVendorToken,
+  ...uploadRentalAgreementDocument,
+  rentalController.uploadLatestRentalAgreementDocument,
+);
 
 // ===================== PUBLIC STALL / HAWKER CENTRE BROWSING (guests + patrons) =====================
 app.get("/api/stalls", stallController.listStalls);

@@ -48,7 +48,7 @@ function renderHawkerCentreCards(centres) {
           <span class="stall-card-no">${centre.location}</span>
           <h3>${centre.name}</h3>
           <p class="mono muted">${centre.stall_count} stall${centre.stall_count === 1 ? "" : "s"} on our platform</p>
-          <span class="directory-card-link">View Stalls →</span>
+          <span class="directory-card-link">Order From Centre →</span>
         </a>
       `
     )
