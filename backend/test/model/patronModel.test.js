@@ -1,4 +1,4 @@
-const patronModel = require("../models/patronModel");
+const patronModel = require("../../models/patronModel");
 const sql = require("mssql");
 
 // Mock the mssql library

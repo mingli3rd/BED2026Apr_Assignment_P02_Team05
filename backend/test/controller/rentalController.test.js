@@ -1,7 +1,7 @@
-const rentalController = require("../controllers/rentalController");
-const rentalModel = require("../models/rentalModel");
+const rentalController = require("../../controllers/rentalController");
+const rentalModel = require("../../models/rentalModel");
 
-jest.mock("../models/rentalModel");
+jest.mock("../../models/rentalModel");
 
 describe("rentalController", () => {
   beforeEach(() => {

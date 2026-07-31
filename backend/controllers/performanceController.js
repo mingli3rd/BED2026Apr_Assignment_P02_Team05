@@ -9,7 +9,7 @@ async function getStallPerformance(req, res) {
   try {
     const vendorId = req.vendor.id;
 
-    const requestedDays = parseInt(req.query.days, 10);
+    const requestedDays = parseInt(req.query?.days, 10);
     const days = ALLOWED_DAYS.includes(requestedDays) ? requestedDays : DEFAULT_DAYS;
 
     // Run these one at a time rather than with Promise.all.
