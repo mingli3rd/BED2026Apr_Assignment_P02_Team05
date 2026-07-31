@@ -1,4 +1,4 @@
-const rentalModel = require("../models/rentalModel");
+const rentalModel = require("../../models/rentalModel");
 const sql = require("mssql");
 
 jest.mock("mssql");
