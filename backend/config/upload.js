@@ -13,6 +13,27 @@ const imageFileFilter = (req, file, cb) => {
   }
 };
 
+const documentFileFilter = (req, file, cb) => {
+  const allowedTypes = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+    return;
+  }
+
+  const extension = path.extname(file.originalname || "").toLowerCase();
+  if ([".pdf", ".doc", ".docx"].includes(extension)) {
+    cb(null, true);
+    return;
+  }
+
+  cb(new Error("Only PDF, DOC, or DOCX documents are allowed."));
+};
+
 // Builds a two-step middleware for a given form field + destination subfolder:
 //   1. multer reads the upload into memory (not straight to disk)
 //   2. sharp processes it — auto-rotates based on EXIF orientation data
@@ -60,10 +81,46 @@ function createImageUploadMiddleware(fieldName, subfolder) {
   ];
 }
 
+function createDocumentUploadMiddleware(fieldName, subfolder) {
+  const memoryUpload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: documentFileFilter,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max upload size
+  });
+
+  return [
+    memoryUpload.single(fieldName),
+    async (req, res, next) => {
+      if (!req.file) {
+        return next();
+      }
+
+      try {
+        const dir = path.join(__dirname, "..", "uploads", subfolder);
+        fs.mkdirSync(dir, { recursive: true });
+
+        const extension = path.extname(req.file.originalname || "").toLowerCase() || ".pdf";
+        const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
+        const destPath = path.join(dir, filename);
+
+        await fs.promises.writeFile(destPath, req.file.buffer);
+
+        req.file.filename = filename;
+        next();
+      } catch (error) {
+        console.error("Document upload error:", error);
+        res.status(500).json({ error: "Error processing uploaded document" });
+      }
+    },
+  ];
+}
+
 const uploadBannerImage = createImageUploadMiddleware("banner_image", "banners");
 const uploadMenuItemImage = createImageUploadMiddleware("image", "menu-items");
+const uploadRentalAgreementDocument = createDocumentUploadMiddleware("agreement_document", "rental-agreements");
 
 module.exports = {
   uploadBannerImage,
   uploadMenuItemImage,
+  uploadRentalAgreementDocument,
 };

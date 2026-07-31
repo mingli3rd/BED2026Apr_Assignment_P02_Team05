@@ -135,6 +135,55 @@ async function getVendorAuthByEmail(email) {
   }
 }
 
+// Get all orders for one vendor, newest first, with item summaries and
+// customer names resolved for the vendor orders page.
+async function getOrdersByVendor(vendorId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("vendor_id", sql.Int, vendorId);
+
+    const result = await request.query(`
+      SELECT
+        o.id AS order_id,
+        ROW_NUMBER() OVER (ORDER BY o.created_at ASC, o.id ASC) AS vendor_order_number,
+        o.order_status,
+        o.total_amount,
+        o.payment_method,
+        o.payment_status,
+        o.packaging_fee,
+        o.created_at,
+        ISNULL(p.name, 'Guest') AS customer,
+        ISNULL(p.email, o.guest_email) AS customer_email,
+        STUFF((
+          SELECT ', ' + mi.name + CASE WHEN oi.quantity > 1 THEN ' x' + CAST(oi.quantity AS VARCHAR) ELSE '' END
+          FROM OrderItems oi
+          JOIN MenuItems mi ON oi.menu_item_id = mi.id
+          WHERE oi.order_id = o.id
+          FOR XML PATH('')
+        ), 1, 2, '') AS items
+      FROM Orders o
+      LEFT JOIN Patrons p ON o.patron_id = p.id
+      WHERE o.vendor_id = @vendor_id
+      ORDER BY o.created_at DESC, o.id DESC
+    `);
+
+    return result.recordset;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
+    }
+  }
+}
+
 // Get real overview stats for the vendor dashboard: pending order count,
 // menu item count, average rating, today's revenue, and the 5 most recent
 // orders (with item names and customer name resolved).
@@ -188,6 +237,7 @@ async function getVendorOverview(vendorId) {
     const ordersResult = await ordersRequest.query(`
       SELECT TOP 5
         o.id AS order_id,
+        ROW_NUMBER() OVER (ORDER BY o.created_at ASC, o.id ASC) AS vendor_order_number,
         o.order_status,
         o.created_at,
         ISNULL(p.name, 'Guest') AS customer,
@@ -261,6 +311,7 @@ module.exports = {
   createVendor,
   getVendorById,
   getVendorAuthByEmail,
+  getOrdersByVendor,
   getVendorOverview,
   updateOrderStatus,
 };

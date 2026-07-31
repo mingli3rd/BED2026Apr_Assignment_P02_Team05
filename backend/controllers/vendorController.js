@@ -75,7 +75,8 @@ async function getDashboard(req, res) {
 
     // Reshape the recent orders into the format the dashboard UI expects
     const recentOrders = overview.recent_orders.map((order) => ({
-      id: `ORD-${order.order_id}`,
+      id: `ORD-${order.vendor_order_number}`,
+      order_number: order.vendor_order_number,
       order_id: order.order_id, // raw numeric id, needed for the status update dropdown
       item: order.items || "(no items recorded)",
       customer: order.customer,
@@ -97,6 +98,34 @@ async function getDashboard(req, res) {
   } catch (error) {
     console.error("Controller error:", error);
     res.status(500).json({ error: "Error loading dashboard" });
+  }
+}
+
+// Get the full order list for this vendor, newest first.
+async function listVendorOrders(req, res) {
+  try {
+    const orders = await vendorModel.getOrdersByVendor(req.vendor.id);
+
+    const formattedOrders = orders.map((order) => ({
+      order_id: order.order_id,
+      order_number: order.vendor_order_number,
+      order_label: `ORD-${order.vendor_order_number}`,
+      customer: order.customer,
+      customer_email: order.customer_email,
+      items: order.items || "(no items recorded)",
+      status: order.order_status,
+      payment_method: order.payment_method,
+      payment_status: order.payment_status,
+      packaging_fee: Number(order.packaging_fee || 0),
+      total_amount: Number(order.total_amount || 0),
+      created_at: order.created_at,
+      time: formatTimeAgo(order.created_at),
+    }));
+
+    res.status(200).json({ orders: formattedOrders });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading vendor orders" });
   }
 }
 
@@ -128,5 +157,6 @@ async function updateOrderStatus(req, res) {
 module.exports = {
   registerVendor,
   getDashboard,
+  listVendorOrders,
   updateOrderStatus,
 };

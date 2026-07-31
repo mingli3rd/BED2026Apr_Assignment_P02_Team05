@@ -196,6 +196,11 @@ async function applySessionAwareNav() {
     const cartIcon = document.getElementById("cartIconLink");
     if (cartIcon) cartIcon.style.display = "none";
 
+    // Same reasoning as above — the featured stalls section is an ordering
+    // prompt ("Real stalls, ready to order"), which doesn't apply to vendors
+    const featuredStallsSection = document.getElementById("featuredStallsSection");
+    if (featuredStallsSection) featuredStallsSection.style.display = "none";
+
   } else if (role === "patron") {
     renderLoggedInAuthArea("patron-orders.html", "My Orders");
     updateCtaBandForPatron();
