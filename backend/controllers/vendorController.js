@@ -75,7 +75,8 @@ async function getDashboard(req, res) {
 
     // Reshape the recent orders into the format the dashboard UI expects
     const recentOrders = overview.recent_orders.map((order) => ({
-      id: `ORD-${order.order_id}`,
+      id: `ORD-${order.vendor_order_number}`,
+      order_number: order.vendor_order_number,
       order_id: order.order_id, // raw numeric id, needed for the status update dropdown
       item: order.items || "(no items recorded)",
       customer: order.customer,
@@ -107,7 +108,8 @@ async function listVendorOrders(req, res) {
 
     const formattedOrders = orders.map((order) => ({
       order_id: order.order_id,
-      order_number: `ORD-${order.order_id}`,
+      order_number: order.vendor_order_number,
+      order_label: `ORD-${order.vendor_order_number}`,
       customer: order.customer,
       customer_email: order.customer_email,
       items: order.items || "(no items recorded)",

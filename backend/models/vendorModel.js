@@ -147,6 +147,7 @@ async function getOrdersByVendor(vendorId) {
     const result = await request.query(`
       SELECT
         o.id AS order_id,
+        ROW_NUMBER() OVER (ORDER BY o.created_at ASC, o.id ASC) AS vendor_order_number,
         o.order_status,
         o.total_amount,
         o.payment_method,
@@ -236,6 +237,7 @@ async function getVendorOverview(vendorId) {
     const ordersResult = await ordersRequest.query(`
       SELECT TOP 5
         o.id AS order_id,
+        ROW_NUMBER() OVER (ORDER BY o.created_at ASC, o.id ASC) AS vendor_order_number,
         o.order_status,
         o.created_at,
         ISNULL(p.name, 'Guest') AS customer,

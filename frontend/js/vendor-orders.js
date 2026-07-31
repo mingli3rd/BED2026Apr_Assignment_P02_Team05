@@ -48,7 +48,7 @@ function renderOrdersTable(orders) {
 
       return `
         <tr>
-          <td class="mono">${order.order_number}</td>
+          <td class="mono">#${order.order_number}</td>
           <td>
             <div>${order.customer}</div>
             <div class="muted" style="font-size:12px;">${order.customer_email || ""}</div>
