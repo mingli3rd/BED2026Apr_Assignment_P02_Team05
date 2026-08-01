@@ -80,14 +80,17 @@ async function getFavouritesByPatron(patronId) {
         v.business_name,
         v.stall_number,
         v.banner_image,
+        hc.name AS hawker_centre_name,
+        hc.cover_image AS hawker_centre_cover_image,
         pf.created_at AS favourited_at,
         ISNULL(AVG(CAST(f.rating AS FLOAT)), 0) AS avg_rating,
         COUNT(f.id) AS review_count
       FROM PatronFavourites pf
       JOIN Vendors v ON pf.vendor_id = v.id
+      LEFT JOIN HawkerCentres hc ON v.hawker_centre_id = hc.id
       LEFT JOIN Feedback f ON f.vendor_id = v.id
       WHERE pf.patron_id = @patron_id
-      GROUP BY v.id, v.business_name, v.stall_number, v.banner_image, pf.created_at
+      GROUP BY v.id, v.business_name, v.stall_number, v.banner_image, hc.name, hc.cover_image, pf.created_at
       ORDER BY pf.created_at DESC
     `);
     return result.recordset;

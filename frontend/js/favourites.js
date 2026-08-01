@@ -37,10 +37,16 @@ async function loadFavourites() {
             ? `★ ${Number(stall.avg_rating).toFixed(1)} (${stall.review_count})`
             : "No reviews yet";
 
+          const imageSrc = stall.banner_image
+            ? "/uploads/" + stall.banner_image
+            : stall.hawker_centre_cover_image
+            ? "images/hawker-centres/" + stall.hawker_centre_cover_image
+            : "images/stall-banner.svg";
+
           return `
             <div class="directory-card-wrapper">
               <a href="stall-menu.html?vendor_id=${stall.id}" class="directory-card">
-                <img src="${stall.banner_image ? "/uploads/" + stall.banner_image : "images/stall-banner.svg"}" alt="" class="directory-card-img" />
+                <img src="${imageSrc}" alt="" class="directory-card-img" />
                 <span class="stall-card-no">Stall ${stall.stall_number || "—"}</span>
                 <h3>${stall.business_name}</h3>
                 <p class="mono muted" style="font-size:12.5px; margin: 4px 0 0;">${ratingText}</p>

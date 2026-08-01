@@ -226,8 +226,13 @@ async function applySessionAwareNav() {
     if (featuredStallsSection) featuredStallsSection.style.display = "none";
 
   } else if (role === "patron") {
-    renderLoggedInAuthArea("patron-orders.html", "My Orders");
+    renderLoggedInAuthArea("profile.html", "My Profile");
     updateCtaBandForPatron();
+
+    // Already have an account — the hero's "Create an account" prompt
+    // doesn't apply to a logged-in patron
+    const heroCreateAccountLink = document.getElementById("heroCreateAccountLink");
+    if (heroCreateAccountLink) heroCreateAccountLink.style.display = "none";
   } else {
     // role === "guest": leave the Sign Up / Log In dropdowns as they are,
     // but still surface a way back to their order tracking if they have any
