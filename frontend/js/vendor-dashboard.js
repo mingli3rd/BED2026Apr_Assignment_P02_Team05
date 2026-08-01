@@ -55,7 +55,7 @@ function renderOrdersTable(orders) {
               ${optionsHtml}
             </select>
           </td>
-          <td>${order.packaging_type === "eco" ? "🌱 " : ""}${order.packaging_description || "Standard packaging"}</td>
+          <td>${order.packaging_type === "eco" ? " " : ""}${order.packaging_description || "Standard packaging"}</td>
           <td>${order.include_cutlery ? "✅ Yes" : "🚫 No"}</td>
           <td class="muted">${order.special_request || "—"}</td>
           <td class="mono muted">${order.time}</td>
@@ -267,8 +267,11 @@ const notifBellPanel = document.getElementById("notifBellPanel");
 const notifBellCount = document.getElementById("notifBellCount");
 const notifBellList = document.getElementById("notifBellList");
 const notifMarkAllBtn = document.getElementById("notifMarkAllBtn");
+const notifFilterButtons = document.querySelectorAll("#notifFilterRow .dash-filter-btn");
 
 let notifPanelOpen = false;
+let allNotifications = []; // full unfiltered list from the last fetch
+let activeNotifFilter = "all"; // "all" | "new_order" | "complaint"
 
 function notifTimeAgo(dateStr) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -301,7 +304,8 @@ async function refreshUnreadCount() {
 
 function renderNotifList(notifications) {
   if (!notifications || notifications.length === 0) {
-    notifBellList.innerHTML = '<p class="notif-bell-empty">No notifications yet.</p>';
+    const emptyLabel = activeNotifFilter === "all" ? "notifications" : activeNotifFilter === "new_order" ? "order notifications" : "complaint notifications";
+    notifBellList.innerHTML = `<p class="notif-bell-empty">No ${emptyLabel} yet.</p>`;
     return;
   }
 
@@ -322,6 +326,22 @@ function renderNotifList(notifications) {
   });
 }
 
+function applyNotifFilter() {
+  const filtered = activeNotifFilter === "all"
+    ? allNotifications
+    : allNotifications.filter((n) => n.type === activeNotifFilter);
+  renderNotifList(filtered);
+}
+
+notifFilterButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    activeNotifFilter = btn.dataset.notifFilter;
+    notifFilterButtons.forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+    applyNotifFilter();
+  });
+});
+
 async function loadNotifications() {
   notifBellList.innerHTML = '<p class="notif-bell-empty">Loading...</p>';
   try {
@@ -330,8 +350,8 @@ async function loadNotifications() {
       credentials: "include",
     });
     if (response.status === 200) {
-      const notifications = await response.json();
-      renderNotifList(notifications);
+      allNotifications = await response.json();
+      applyNotifFilter();
     } else {
       notifBellList.innerHTML = '<p class="notif-bell-empty">Could not load notifications.</p>';
     }
@@ -354,6 +374,9 @@ async function handleNotifClick(itemEl) {
   if (!itemEl.classList.contains("is-unread")) return; // already read, nothing to do
 
   itemEl.classList.remove("is-unread");
+  const notifEntry = allNotifications.find((n) => String(n.id) === String(notifId));
+  if (notifEntry) notifEntry.is_read = true;
+
   try {
     await fetch(`${apiBaseUrl}/api/vendor/notifications/${notifId}/read`, {
       method: "PUT",
@@ -372,6 +395,7 @@ notifMarkAllBtn.addEventListener("click", async (event) => {
       method: "PUT",
       credentials: "include",
     });
+    allNotifications.forEach((n) => (n.is_read = true));
     notifBellList.querySelectorAll(".notif-item").forEach((item) => item.classList.remove("is-unread"));
     refreshUnreadCount();
   } catch (error) {

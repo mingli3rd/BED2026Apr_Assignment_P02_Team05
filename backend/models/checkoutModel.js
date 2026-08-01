@@ -75,6 +75,23 @@ function resolvePackaging(items, requestedOptionId, packagingOption) {
   };
 }
 
+// Inserts directly using the connection already open in createOrdersFromCart,
+// rather than calling notificationModel.createNotification() (which opens
+// and closes its own connection) — nesting a second connect/close cycle
+// inside this loop risks the mssql global pool getting closed mid-loop
+// when there are multiple vendor groups in one checkout.
+async function pushOrderNotification(connection, vendorId, orderId, message) {
+  const request = connection.request();
+  request.input("vendor_id", sql.Int, vendorId);
+  request.input("type", sql.VarChar, "new_order");
+  request.input("reference_id", sql.Int, orderId);
+  request.input("message", sql.VarChar, message);
+  await request.query(`
+    INSERT INTO Notifications (vendor_id, type, reference_id, message)
+    VALUES (@vendor_id, @type, @reference_id, @message)
+  `);
+}
+
 // Creates one Order (+ OrderItems + OrderItemAddOns) per vendor group,
 // after a successful mock payment. patronId may be null for guest checkout.
 // vendorOptions is keyed by vendor_id: { [vendor_id]: { packaging_type, special_request } }
@@ -177,6 +194,13 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
           `);
         }
       }
+
+      // Push a real-time notification to the vendor as soon as their order lands
+      const itemsSummary = items.map((item) => `${item.quantity}x ${item.name}`).join(", ");
+      const orderMessage = specialRequest
+        ? `New order #${orderId}: ${itemsSummary} — Note: "${specialRequest}"`
+        : `New order #${orderId}: ${itemsSummary}`;
+      await pushOrderNotification(connection, vendorId, orderId, orderMessage);
 
       createdOrders.push({
         order_id: orderId,

@@ -16,7 +16,7 @@
 
     <!-- ===================== SIDEBAR ===================== -->
     <aside class="dash-sidebar">
-      <a href="vendor-dashboard.html" class="board-logo dash-logo">
+      <a href="index.html" class="board-logo dash-logo">
         <span class="board-logo-mark">SG</span>
         <span class="board-logo-text">HAWKER HUB</span>
       </a>
@@ -50,6 +50,7 @@
       </nav>
 
       <div class="dash-sidebar-footer">
+        <a href="index.html" class="dash-nav-link dash-back-link">← Back to Site</a>
         <button id="logoutBtn" class="dash-logout-btn">Log Out</button>
       </div>
     </aside>
@@ -80,6 +81,11 @@
                 <div class="notif-bell-panel-header">
                   <span>Notifications</span>
                   <button id="notifMarkAllBtn" class="notif-mark-all-btn">Mark all read</button>
+                </div>
+                <div class="dash-filter-group" id="notifFilterRow" style="padding: 10px 14px; border-bottom: 1px solid var(--line);">
+                  <button type="button" class="dash-filter-btn is-active" data-notif-filter="all">All</button>
+                  <button type="button" class="dash-filter-btn" data-notif-filter="new_order">Orders</button>
+                  <button type="button" class="dash-filter-btn" data-notif-filter="complaint">Complaints</button>
                 </div>
                 <div id="notifBellList" class="notif-bell-list">
                   <p class="notif-bell-empty">Loading...</p>
