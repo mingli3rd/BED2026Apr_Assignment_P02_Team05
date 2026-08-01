@@ -106,6 +106,10 @@ app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatro
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
 app.put("/api/vendor/orders/:id/status", verifyVendorToken, vendorController.updateOrderStatus);
+app.get("/api/vendor/stall-profile", verifyVendorToken, vendorController.getStallProfile);
+app.put("/api/vendor/stall-profile/settings", verifyVendorToken, vendorController.updateStallProfileSettings);
+app.put("/api/vendor/stall-profile/banner", verifyVendorToken, ...uploadBannerImage, vendorController.updateStallBanner);
+app.get("/api/vendor/hygiene-history", verifyVendorToken, vendorController.getHygieneGradeHistory);
 
 // ===================== PROTECTED PATRON ROUTES =====================
 app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders);

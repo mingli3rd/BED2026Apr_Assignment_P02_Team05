@@ -4,6 +4,7 @@ redirectIfVendor();
 
 let allStalls = []; // full unfiltered list, with grades merged in
 let activeGradeFilter = "";
+let activeRatingSort = "";
 
 function getHawkerCentreIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -31,9 +32,16 @@ async function loadHygieneGrades() {
 }
 
 function applyGradeFilter() {
-  const filtered = activeGradeFilter
+  let filtered = activeGradeFilter
     ? allStalls.filter((stall) => stall.grade === activeGradeFilter)
     : allStalls;
+
+  if (activeRatingSort) {
+    filtered = [...filtered].sort((a, b) =>
+      activeRatingSort === "desc" ? b.avg_rating - a.avg_rating : a.avg_rating - b.avg_rating
+    );
+  }
+
   renderStallCards(filtered);
 }
 
@@ -49,6 +57,20 @@ createFilterDropdown(
   "All Hygiene Grades",
   (value) => {
     activeGradeFilter = value;
+    applyGradeFilter();
+  }
+);
+
+createFilterDropdown(
+  "ratingSortFilter",
+  [
+    { value: "", label: "Sort by Rating" },
+    { value: "desc", label: "Rating: High to Low" },
+    { value: "asc", label: "Rating: Low to High" },
+  ],
+  "Sort by Rating",
+  (value) => {
+    activeRatingSort = value;
     applyGradeFilter();
   }
 );
@@ -79,6 +101,7 @@ function renderStallCards(stalls) {
             ${stall.grade ? `<span class="grade-badge ${gradeClass(stall.grade)}">${stall.grade}</span>` : ""}
           </div>
           <h3>${stall.business_name}</h3>
+          <p class="mono muted">${stall.review_count > 0 ? `★ ${Number(stall.avg_rating).toFixed(1)} (${stall.review_count} review${stall.review_count === 1 ? "" : "s"})` : "No reviews yet"}</p>
           <span class="directory-card-link">Order Now →</span>
         </a>
       `
