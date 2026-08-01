@@ -45,10 +45,13 @@ function renderHawkerCentreCards(centres) {
     .map(
       (centre) => `
         <a href="hawker-centre.html?id=${centre.id}" class="directory-card">
+          <div class="directory-card-image">
+            <img src="${centre.cover_image ? "images/hawker-centres/" + centre.cover_image : "images/stall-banner.svg"}" alt="${centre.name}" loading="lazy" />
+          </div>
           <span class="stall-card-no">${centre.location}</span>
           <h3>${centre.name}</h3>
           <p class="mono muted">${centre.stall_count} stall${centre.stall_count === 1 ? "" : "s"} on our platform</p>
-          <span class="directory-card-link">Order From Centre →</span>
+          <span class="directory-card-link">View Stalls →</span>
         </a>
       `
     )

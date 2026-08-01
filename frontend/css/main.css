@@ -2555,6 +2555,19 @@ a.dash-action-btn {
   color: var(--mustard);
 }
 
+.directory-card-image {
+  margin: -22px -22px 16px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  overflow: hidden;
+}
+
+.directory-card-image img {
+  display: block;
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
 @media (max-width: 900px) {
   .directory-grid {
     grid-template-columns: repeat(2, 1fr);

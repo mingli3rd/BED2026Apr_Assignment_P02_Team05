@@ -65,6 +65,7 @@ async function searchHawkerCentres(search, location) {
         hc.id,
         hc.name,
         hc.location,
+        hc.cover_image,
         COUNT(v.id) AS stall_count
       FROM HawkerCentres hc
       LEFT JOIN Vendors v ON v.hawker_centre_id = hc.id AND v.approval_status = 'approved'
@@ -81,7 +82,7 @@ async function searchHawkerCentres(search, location) {
       query += ` AND hc.location = @location`;
     }
 
-    query += ` GROUP BY hc.id, hc.name, hc.location ORDER BY hc.name ASC`;
+    query += ` GROUP BY hc.id, hc.name, hc.location, hc.cover_image ORDER BY hc.name ASC`;
 
     const result = await request.query(query);
     return result.recordset;
@@ -104,7 +105,7 @@ async function getHawkerCentreById(hawkerCentreId) {
     const request = connection.request();
     request.input("id", sql.Int, hawkerCentreId);
     const result = await request.query(`
-      SELECT id, name, location FROM HawkerCentres WHERE id = @id
+      SELECT id, name, location, cover_image FROM HawkerCentres WHERE id = @id
     `);
     return result.recordset[0] || null;
   } catch (error) {
@@ -123,7 +124,7 @@ async function getHawkerCentres() {
   try {
     connection = await sql.connect(dbConfig);
     const result = await connection.request().query(`
-      SELECT id, name, location FROM HawkerCentres ORDER BY location, name
+      SELECT id, name, location, cover_image FROM HawkerCentres ORDER BY location, name
     `);
     return result.recordset;
   } catch (error) {
