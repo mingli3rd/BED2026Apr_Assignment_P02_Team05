@@ -24,6 +24,8 @@ const checkoutSchema = Joi.object({
         vendor_id: Joi.number().integer().required(),
         vendor_name: Joi.string().optional(),
         name: Joi.string().required(),
+        category: Joi.string().optional(),
+        image: Joi.string().allow(null, "").optional(),
         price: Joi.number().positive().required(),
         quantity: Joi.number().integer().min(1).required(),
         add_ons: Joi.array()
