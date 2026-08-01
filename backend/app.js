@@ -96,6 +96,7 @@ app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatro
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard); //yeong jong
 app.get("/api/vendor/orders", verifyVendorToken, vendorController.listVendorOrders);
 app.get("/api/vendor/stall-profile", verifyVendorToken, vendorController.getStallProfile);
+app.get("/api/vendor/hygiene-history", verifyVendorToken, vendorController.getHygieneGradeHistory);
 app.put("/api/vendor/stall-profile/settings", verifyVendorToken, vendorController.updateStallProfileSettings);
 app.put("/api/vendor/stall-profile/banner", verifyVendorToken, ...uploadBannerImage, vendorController.updateStallBanner);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);

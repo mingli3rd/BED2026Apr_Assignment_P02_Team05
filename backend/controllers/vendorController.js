@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const vendorModel = require("../models/vendorModel");
+const hygieneGradeModel = require("../models/hygieneGradeModel");
 const stallProfileSettingsModel = require("../models/stallProfileSettingsModel");
 
 // Register a new vendor account
@@ -153,6 +154,17 @@ async function getStallProfile(req, res) {
   }
 }
 
+// Get the logged-in vendor's full hygiene grade history from the main database.
+async function getHygieneGradeHistory(req, res) {
+  try {
+    const history = await hygieneGradeModel.getGradeHistoryByVendor(req.vendor.id);
+    res.status(200).json(history);
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading grade history" });
+  }
+}
+
 async function updateStallProfileSettings(req, res) {
   try {
     const profile = await vendorModel.getVendorStallProfile(req.vendor.id);
@@ -220,6 +232,7 @@ module.exports = {
   getDashboard,
   listVendorOrders,
   getStallProfile,
+  getHygieneGradeHistory,
   updateStallProfileSettings,
   updateStallBanner,
   updateOrderStatus,
