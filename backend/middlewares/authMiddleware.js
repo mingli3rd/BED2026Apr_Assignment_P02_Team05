@@ -48,7 +48,31 @@ function verifyPatronToken(req, res, next) {
   }
 }
 
+// NEW: Optional auth for routes that must work for BOTH logged-in patrons
+// and guests (e.g. submitting a complaint). Unlike verifyPatronToken, this
+// never blocks the request - it just attaches req.patron when a valid
+// patron cookie happens to be present, and silently continues otherwise.
+function attachPatronIfPresent(req, res, next) {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return next(); // no cookie at all - proceed as guest
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role === "patron") {
+      req.patron = decoded; // { id, email, role }
+    }
+    // if it's a vendor token, or anything else, just ignore it and continue as guest
+  } catch (error) {
+    // expired/invalid token - don't error out, just treat as guest
+  }
+  next();
+}
+
 module.exports = {
   verifyVendorToken,
   verifyPatronToken,
+  attachPatronIfPresent,
 };

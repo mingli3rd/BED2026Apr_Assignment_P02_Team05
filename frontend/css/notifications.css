@@ -1,0 +1,130 @@
+.notif-bell-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.notif-bell-btn {
+  position: relative;
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  font-size: 18px;
+  line-height: 1;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.notif-bell-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.notif-bell-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #B23A2F;
+  color: #fff;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.notif-bell-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 340px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+  z-index: 50;
+}
+
+.notif-bell-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.notif-mark-all-btn {
+  background: none;
+  border: none;
+  color: #2A6BB5;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.notif-mark-all-btn:hover { text-decoration: underline; }
+
+.notif-bell-list { padding: 4px 0; }
+
+.notif-bell-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  margin: 0;
+}
+
+.notif-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  cursor: pointer;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.notif-item:last-child { border-bottom: none; }
+
+.notif-item:hover { background: rgba(0, 0, 0, 0.03); }
+
+.notif-item.is-unread {
+  background: rgba(178, 58, 47, 0.05);
+}
+
+.notif-item-type {
+  display: inline-block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #B23A2F;
+  margin-bottom: 4px;
+}
+
+.notif-item-message {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #222;
+  margin: 0 0 4px;
+}
+
+.notif-item-time {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.4);
+}

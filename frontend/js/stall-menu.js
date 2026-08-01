@@ -398,3 +398,77 @@ if (!initialVendorId) {
 }
 
 updateFloatingCartBar();
+
+// =========================================================
+// COMPLAINT SUBMISSION ("Report an Issue")
+// Works for both guests and logged-in patrons — credentials: "include"
+// sends the patron cookie if present, but the backend accepts the
+// request either way since Complaints.patron_id is nullable.
+// =========================================================
+
+const reportIssueBtn = document.getElementById("reportIssueBtn");
+const complaintModal = document.getElementById("complaintModal");
+const complaintStallName = document.getElementById("complaintStallName");
+const complaintDescription = document.getElementById("complaintDescription");
+const complaintCharCount = document.getElementById("complaintCharCount");
+const complaintFormMessage = document.getElementById("complaintFormMessage");
+const complaintSubmitBtn = document.getElementById("complaintSubmitBtn");
+const complaintCancelBtn = document.getElementById("complaintCancelBtn");
+
+reportIssueBtn.addEventListener("click", () => {
+  const stallName = document.getElementById("stallName").textContent;
+  complaintStallName.textContent = `Against: ${stallName}`;
+  complaintDescription.value = "";
+  complaintCharCount.textContent = "0 / 500";
+  complaintFormMessage.style.display = "none";
+  complaintModal.style.display = "flex";
+});
+
+complaintCancelBtn.addEventListener("click", () => {
+  complaintModal.style.display = "none";
+});
+
+complaintDescription.addEventListener("input", () => {
+  complaintCharCount.textContent = `${complaintDescription.value.length} / 500`;
+});
+
+complaintSubmitBtn.addEventListener("click", async () => {
+  const description = complaintDescription.value.trim();
+
+  complaintFormMessage.style.display = "none";
+
+  if (description.length < 10) {
+    complaintFormMessage.textContent = "Please provide a bit more detail (at least 10 characters).";
+    complaintFormMessage.style.display = "block";
+    return;
+  }
+
+  complaintSubmitBtn.disabled = true;
+  complaintSubmitBtn.textContent = "Submitting...";
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/complaints`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ vendor_id: parseInt(currentVendorId), description }),
+    });
+
+    const data = await response.json();
+
+    if (response.status === 201) {
+      complaintModal.style.display = "none";
+      showToast("Your complaint has been submitted. The stall has been notified.");
+    } else {
+      complaintFormMessage.textContent = data.error || "Could not submit your complaint. Please try again.";
+      complaintFormMessage.style.display = "block";
+    }
+  } catch (error) {
+    console.error("Error submitting complaint:", error);
+    complaintFormMessage.textContent = "Could not submit your complaint. Please check your connection and try again.";
+    complaintFormMessage.style.display = "block";
+  } finally {
+    complaintSubmitBtn.disabled = false;
+    complaintSubmitBtn.textContent = "Submit Complaint";
+  }
+});
