@@ -18,7 +18,7 @@ const { validatePatronRegister } = require("./middlewares/patronValidation");
 // --- Auth (login/logout, shared between vendor and patron) ---
 const authController = require("./controllers/authController");
 const { validateLogin } = require("./middlewares/loginValidation");
-const { verifyVendorToken, verifyPatronToken } = require("./middlewares/authMiddleware");
+const { verifyVendorToken, verifyPatronToken, attachPatronIfPresent } = require("./middlewares/authMiddleware");
 
 // --- Stall Performance ---
 const performanceController = require("./controllers/performanceController");
@@ -51,6 +51,11 @@ const { validateFeedback } = require("./middlewares/feedbackValidation");
 const favouriteController = require("./controllers/favouriteController");
 const { validateFavourite, validateProfileUpdate } = require("./middlewares/favouriteValidation");
 const profileController = require("./controllers/profileController");
+
+// --- Complaints & Notifications ---
+const complaintController = require("./controllers/complaintController");
+const { validateComplaint } = require("./middlewares/complaintValidation");
+const notificationController = require("./controllers/notificationController");
 
 
 // Create Express app
@@ -138,6 +143,19 @@ app.get("/api/patron/favourites", verifyPatronToken, favouriteController.listFav
 // ===================== PROFILE (patron-facing) =====================
 app.get("/api/patron/profile", verifyPatronToken, profileController.getProfile);
 app.put("/api/patron/profile", verifyPatronToken, validateProfileUpdate, profileController.updateProfile);
+
+// ===================== COMPLAINTS (guest/patron submission, vendor management) =====================
+// attachPatronIfPresent is optional auth — works for guests AND logged-in patrons,
+// unlike verifyPatronToken which would reject guests outright.
+app.post("/api/complaints", attachPatronIfPresent, validateComplaint, complaintController.submitComplaint);
+app.get("/api/vendor/complaints", verifyVendorToken, complaintController.getMyComplaints);
+app.put("/api/vendor/complaints/:id/status", verifyVendorToken, complaintController.updateComplaintStatus);
+
+// ===================== NOTIFICATIONS (vendor-facing) =====================
+app.get("/api/vendor/notifications", verifyVendorToken, notificationController.getMyNotifications);
+app.get("/api/vendor/notifications/unread-count", verifyVendorToken, notificationController.getUnreadCount);
+app.put("/api/vendor/notifications/:id/read", verifyVendorToken, notificationController.markAsRead);
+app.put("/api/vendor/notifications/read-all", verifyVendorToken, notificationController.markAllAsRead);
 
 // Start server
 app.listen(port, () => {
