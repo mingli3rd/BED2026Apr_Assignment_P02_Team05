@@ -47,7 +47,7 @@ function renderOrdersTable(orders) {
 
       return `
         <tr>
-          <td class="mono">${order.id}</td>
+          <td class="mono">#${order.order_number || order.order_id}</td>
           <td>${order.item}</td>
           <td>${order.customer}</td>
           <td>

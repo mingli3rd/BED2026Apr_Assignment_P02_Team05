@@ -1431,6 +1431,12 @@ img {
   opacity: 0.6;
 }
 
+a.dash-action-btn {
+  cursor: pointer;
+  opacity: 1;
+  color: var(--chalk);
+}
+
 /* --- Responsive --- */
 
 @media (max-width: 900px) {
@@ -1486,11 +1492,36 @@ img {
 
 .chart-wrap {
   position: relative;
+  width: 100%;
   height: 260px;
 }
 
-.chart-wrap-small {
-  height: 220px;
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.dash-filter-group {
+  display: flex;
+  gap: 8px;
+}
+
+.dash-filter-btn {
+  background: transparent;
+  border: 1px solid rgba(245, 241, 230, 0.2);
+  color: var(--muted, #8FA69D);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dash-filter-btn.is-active {
+  background: #E8A33D;
+  border-color: #E8A33D;
+  color: #1F473D;
+  font-weight: 700;
 }
 
 .dash-list {
@@ -1709,6 +1740,37 @@ img {
   margin: 8px 0 0;
   padding-top: 8px;
   border-top: 1px solid var(--line);
+}
+
+.agreement-upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.agreement-upload-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.agreement-upload-filename {
+  min-width: 220px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.agreement-document-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mustard);
+}
+
+.agreement-document-link:hover {
+  text-decoration: underline;
 }
 
 /* =========================================================
@@ -2628,6 +2690,48 @@ img {
   text-transform: capitalize;
 }
 
+.stall-item-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.item-tag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.item-tag-recommended {
+  background-color: rgba(232, 163, 61, 0.18);
+  color: var(--mustard);
+}
+
+.item-tag-bestseller {
+  background-color: rgba(31, 122, 77, 0.18);
+  color: #4fbf8c;
+}
+
+.stall-item-grid.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.stall-item-grid.layout-grid .stall-item-card,
+.stall-item-grid.layout-spotlight .stall-item-card {
+  align-items: flex-start;
+}
+
+.stall-item-grid.layout-spotlight .stall-item-card:first-child {
+  border-color: var(--mustard);
+  box-shadow: 0 0 0 1px rgba(232, 163, 61, 0.25) inset;
+}
+
 /* --- Floating cart bar --- */
 
 .floating-cart-bar {
@@ -3033,6 +3137,95 @@ img {
   font-weight: 700;
   color: var(--chalk);
   margin-bottom: 6px;
+}
+
+/* =========================================================
+   VENDOR STALL PROFILE STUDIO
+========================================================= */
+
+.stall-profile-controls {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 18px;
+}
+
+.stall-profile-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.stall-preview-panel {
+  padding: 10px;
+}
+
+.stall-preview-shell {
+  max-width: none;
+  padding: 8px;
+}
+
+.profile-item-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-item-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.profile-item-tag-recommended {
+  background-color: rgba(232, 163, 61, 0.18);
+  color: var(--mustard);
+}
+
+.profile-item-tag-bestseller {
+  background-color: rgba(31, 122, 77, 0.18);
+  color: #4fbf8c;
+}
+
+.profile-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.profile-item-image-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.stall-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.stall-profile-grid .stall-item-card,
+.stall-profile-spotlight .stall-item-card {
+  align-items: flex-start;
+}
+
+.stall-profile-spotlight .stall-item-card:first-child {
+  border-color: var(--mustard);
+  box-shadow: 0 0 0 1px rgba(232, 163, 61, 0.25) inset;
+}
+
+@media (max-width: 900px) {
+  .stall-profile-controls {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =========================================================

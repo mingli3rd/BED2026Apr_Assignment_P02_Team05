@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vendor Orders — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-shell">
+    <aside class="dash-sidebar">
+      <a href="index.html" class="board-logo dash-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="dash-nav" aria-label="Dashboard navigation">
+        <a href="vendor-dashboard.html" class="dash-nav-link">
+          <span class="stall-no">01</span> Overview
+        </a>
+        <a href="menu.html" class="dash-nav-link">
+          <span class="stall-no">02</span> Menu
+        </a>
+        <a href="vendor-orders.html" class="dash-nav-link is-active">
+          <span class="stall-no">03</span> Orders
+        </a>
+        <a href="rental-agreements.html" class="dash-nav-link">
+          <span class="stall-no">04</span> Rental Agreements
+          <span id="sidebarNotifDot" class="notif-dot" style="display: none;"></span>
+        </a>
+        <a href="hygiene-history.html" class="dash-nav-link">
+          <span class="stall-no">05</span> Hygiene Grades
+        </a>
+        <a href="stall-profile.html" class="dash-nav-link">
+          <span class="stall-no">06</span> Stall Profile
+        </a>
+        <a href="stall-performance.html" class="dash-nav-link">
+          <span class="stall-no">07</span> Performance
+        </a>
+      </nav>
+
+      <div class="dash-sidebar-footer">
+        <a href="index.html" class="dash-nav-link dash-back-link">← Back to Site</a>
+        <button id="logoutBtn" class="dash-logout-btn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="dash-main">
+      <div id="dashboardLoading" class="dashboard-loading">Loading your orders...</div>
+      <div id="dashboardError" class="form-message is-warning" style="display: none;"></div>
+
+      <div id="dashboardContent" class="dashboard-content" style="display: none;">
+        <div class="dash-header">
+          <div>
+            <p class="eyebrow">Vendor Orders</p>
+            <h1 class="dash-welcome">Track every incoming order.</h1>
+          </div>
+          <a href="vendor-dashboard.html" class="btn btn-ghost">Back to Dashboard</a>
+        </div>
+
+        <div class="dash-stats-grid">
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Total</span>
+            <h3 id="totalOrdersCount">0</h3>
+            <p>Orders in history</p>
+          </div>
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Pending</span>
+            <h3 id="pendingOrdersCount">0</h3>
+            <p>Waiting to be prepared</p>
+          </div>
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Completed</span>
+            <h3 id="completedOrdersCount">0</h3>
+            <p>Fulfilled orders</p>
+          </div>
+          <div class="dash-stat-card">
+            <span class="stall-card-no">Revenue</span>
+            <h3 id="totalRevenue">$0.00</h3>
+            <p>All-time order revenue</p>
+          </div>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2>All Orders</h2>
+            <span class="dash-panel-note">Newest orders first</span>
+          </div>
+
+          <table class="dash-table vendor-orders-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+
+          <div id="ordersEmptyState" class="dash-empty-state" style="display: none;">
+            <p>No orders yet. Once patrons place orders, they will show up here.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/vendor-orders.js"></script>
+</body>
+</html>

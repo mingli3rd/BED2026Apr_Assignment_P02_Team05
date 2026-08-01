@@ -1,4 +1,5 @@
 const stallMenuModel = require("../models/stallMenuModel");
+const stallProfileSettingsModel = require("../models/stallProfileSettingsModel");
 
 async function listStalls(req, res) {
   try {
@@ -57,7 +58,10 @@ async function getStallMenu(req, res) {
       return res.status(404).json({ error: "Stall not found" });
     }
     const menu = await stallMenuModel.getActiveMenuByVendor(req.params.vendorId);
-    res.status(200).json({ vendor, menu });
+    const itemIds = menu.map((item) => item.id);
+    const settings = await stallProfileSettingsModel.getVendorSettings(req.params.vendorId, itemIds);
+    const decoratedMenu = stallProfileSettingsModel.applySettingsToMenu(menu, settings);
+    res.status(200).json({ vendor, menu: decoratedMenu, settings });
   } catch (error) {
     console.error("Controller error:", error);
     res.status(500).json({ error: "Error loading stall menu" });

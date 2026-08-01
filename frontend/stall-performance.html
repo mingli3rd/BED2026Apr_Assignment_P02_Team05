@@ -28,7 +28,7 @@
         <a href="menu.html" class="dash-nav-link">
           <span class="stall-no">02</span> Menu
         </a>
-        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+        <a href="vendor-orders.html" class="dash-nav-link">
           <span class="stall-no">03</span> Orders
         </a>
         <a href="rental-agreements.html" class="dash-nav-link">
@@ -37,7 +37,7 @@
         <a href="hygiene-history.html" class="dash-nav-link">
           <span class="stall-no">05</span> Hygiene Grades
         </a>
-        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+        <a href="stall-profile.html" class="dash-nav-link">
           <span class="stall-no">06</span> Stall Profile
         </a>
         <a href="stall-performance.html" class="dash-nav-link is-active">
@@ -90,16 +90,20 @@
           </div>
         </div>
 
-        <!-- Sales trend chart -->
         <div class="dash-panel">
           <div class="dash-panel-header">
-            <h2>Sales — Last 7 Days</h2>
+            <h2>Sales Trend</h2>
+            <div class="dash-filter-group" id="salesRangeFilter">
+              <button class="dash-filter-btn is-active" data-days="7">7D</button>
+              <button class="dash-filter-btn" data-days="30">30D</button>
+              <button class="dash-filter-btn" data-days="90">90D</button>
+            </div>
           </div>
           <div class="chart-wrap">
             <canvas id="salesChart"></canvas>
           </div>
           <div id="salesEmptyState" class="dash-empty-state" style="display: none;">
-            <p>No completed orders in the last 7 days yet.</p>
+            <p>No completed orders in this period yet.</p>
           </div>
         </div>
 

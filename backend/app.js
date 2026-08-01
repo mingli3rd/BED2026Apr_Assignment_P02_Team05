@@ -3,9 +3,12 @@ const sql = require("mssql");
 const dotenv = require("dotenv");
 const path = require("path");
 const cookieParser = require("cookie-parser");
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger-output.json");
 
 // Load environment variables
 dotenv.config();
+
 
 // --- Vendor ---
 const vendorController = require("./controllers/vendorController");
@@ -41,7 +44,7 @@ const { validateCartItem, validateCheckout } = require("./middlewares/cartValida
 const checkoutController = require("./controllers/checkoutController");
 
 // --- Image Uploads ---
-const { uploadBannerImage, uploadMenuItemImage } = require("./config/upload");
+const { uploadBannerImage, uploadMenuItemImage, uploadRentalAgreementDocument } = require("./config/upload");
 
 // --- Feedback ---
 const feedbackController = require("./controllers/feedbackController");
@@ -76,28 +79,35 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 // --- Serve uploaded vendor/menu images ---
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Serve the Swagger UI at a specific route
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // ===================== VENDOR ROUTES =====================
 // uploadBannerImage runs first to parse the multipart form data
 // (text fields + the banner file), process/auto-orient the image, then
 // hand off to validation and the controller
-app.post("/api/auth/vendor/register", ...uploadBannerImage, validateVendorRegister, vendorController.registerVendor);
+app.post("/api/auth/vendor/register", ...uploadBannerImage, validateVendorRegister, vendorController.registerVendor); //yeong jong
 
 // ===================== PATRON ROUTES =====================
-app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron);
+app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron); //yeong jong
 
 // ===================== AUTH ROUTES (LOGIN / LOGOUT — shared by vendor + patron) =====================
-app.post("/api/auth/login", validateLogin, authController.login);
-app.post("/api/auth/logout", authController.logout);
-app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor);
-app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron);
+app.post("/api/auth/login", validateLogin, authController.login); //yeong jong
+app.post("/api/auth/logout", authController.logout); //yeong jong
+app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor); //yeong jong
+app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron); //yeong jong
 
 // ===================== PROTECTED VENDOR ROUTES =====================
-app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
+app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard); //yeong jong
+app.get("/api/vendor/orders", verifyVendorToken, vendorController.listVendorOrders);
+app.get("/api/vendor/stall-profile", verifyVendorToken, vendorController.getStallProfile);
+app.put("/api/vendor/stall-profile/settings", verifyVendorToken, vendorController.updateStallProfileSettings);
+app.put("/api/vendor/stall-profile/banner", verifyVendorToken, ...uploadBannerImage, vendorController.updateStallBanner);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
 app.put("/api/vendor/orders/:id/status", verifyVendorToken, vendorController.updateOrderStatus);
 
 // ===================== PROTECTED PATRON ROUTES =====================
-app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders);
+app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders); //yeong jong
 
 // ===================== MENU MANAGEMENT ROUTES (vendor-facing) =====================
 app.get("/api/vendor/menu", verifyVendorToken, menuController.listMenuItems);
@@ -109,6 +119,12 @@ app.get("/api/cuisines", verifyVendorToken, menuController.listCuisines);
 
 // ===================== RENTAL AGREEMENT ROUTES =====================
 app.get("/api/vendor/rental-agreements", verifyVendorToken, rentalController.listRentalAgreements);
+app.put(
+  "/api/vendor/rental-agreements/latest/document",
+  verifyVendorToken,
+  ...uploadRentalAgreementDocument,
+  rentalController.uploadLatestRentalAgreementDocument,
+);
 
 // ===================== PUBLIC STALL / HAWKER CENTRE BROWSING (guests + patrons) =====================
 app.get("/api/stalls", stallController.listStalls);
@@ -118,11 +134,11 @@ app.get("/api/hawker-centres/search", stallController.searchHawkerCentres);
 app.get("/api/hawker-centres/:id/stalls", stallController.getHawkerCentreStalls);
 
 // ===================== CART (logged-in patrons only — guests use localStorage) =====================
-app.post("/api/cart", verifyPatronToken, validateCartItem, cartController.addToCart);
-app.get("/api/cart", verifyPatronToken, cartController.getCart);
-app.put("/api/cart/:id", verifyPatronToken, cartController.updateCartItem);
-app.delete("/api/cart/:id", verifyPatronToken, cartController.removeCartItem);
-app.delete("/api/cart", verifyPatronToken, cartController.clearCart);
+app.post("/api/cart", verifyPatronToken, validateCartItem, cartController.addToCart); //yeong jong
+app.get("/api/cart", verifyPatronToken, cartController.getCart); //yeong jong
+app.put("/api/cart/:id", verifyPatronToken, cartController.updateCartItem); //yeong jong
+app.delete("/api/cart/:id", verifyPatronToken, cartController.removeCartItem); //yeong jong
+app.delete("/api/cart", verifyPatronToken, cartController.clearCart); //yeong jong
 
 // ===================== CHECKOUT / ORDERS (works for guests AND logged-in patrons) =====================
 app.post("/api/orders", validateCheckout, checkoutController.createOrder);
