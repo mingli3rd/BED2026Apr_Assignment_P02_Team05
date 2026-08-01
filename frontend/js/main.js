@@ -57,6 +57,25 @@ if (ticketNumber && !window.matchMedia("(prefers-reduced-motion: reduce)").match
 
 const navApiBaseUrl = "http://localhost:3000";
 
+// Pages a logged-in vendor is allowed to see. Any other page redirects them
+// straight back to the dashboard — a vendor session should never be able to
+// browse the customer-facing site without logging out first.
+const VENDOR_ALLOWED_PAGES = new Set([
+  "vendor-dashboard.html",
+  "vendor-orders.html",
+  "stall-profile.html",
+  "stall-performance.html",
+  "rental-agreements.html",
+  "packaging.html",
+  "menu.html",
+  "hygiene-history.html",
+]);
+
+function getCurrentPageName() {
+  const path = window.location.pathname;
+  return path.substring(path.lastIndexOf("/") + 1) || "index.html";
+}
+
 async function getCurrentSessionRole() {
   try {
     const vendorRes = await fetch(`${navApiBaseUrl}/api/auth/me`, {
@@ -180,6 +199,11 @@ async function applySessionAwareNav() {
   const { role } = await getCurrentSessionRole();
 
   if (role === "vendor") {
+    if (!VENDOR_ALLOWED_PAGES.has(getCurrentPageName())) {
+      window.location.replace("vendor-dashboard.html");
+      return;
+    }
+
     renderLoggedInAuthArea("vendor-dashboard.html", "Dashboard");
     updateCtaBandForVendor();
 

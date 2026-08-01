@@ -5,10 +5,21 @@ const routes = ["./app.js"]; // Path to your API route files
 
 const doc = {
   info: {
-    title: "My API",
-    description: "Description of your API",
+    title: "SG Hawker Hub API",
+    description: "REST API for the SG Hawker Hub vendor/patron ordering platform.",
+    version: "1.0.0",
   },
-  host: "localhost:3000", // Replace with your actual host if needed
+  host: "localhost:3000",
+  basePath: "/",
+  schemes: ["http"],
+  securityDefinitions: {
+    cookieAuth: {
+      type: "apiKey",
+      in: "cookie",
+      name: "token",
+      description: "JWT issued on login (POST /api/auth/login), sent automatically as an HTTP-only cookie named 'token'.",
+    },
+  },
 };
 
 swaggerAutogen(outputFile, routes, doc).then(() => {
