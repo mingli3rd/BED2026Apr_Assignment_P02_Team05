@@ -79,9 +79,11 @@ function renderMenuTable(items) {
           <td class="mono">$${Number(item.price).toFixed(2)}</td>
           <td class="muted">${item.category || "—"}</td>
           <td class="muted">${item.cuisines || "—"}</td>
-          <td class="menu-table-actions">
-            <button class="dash-link-btn" data-edit-id="${item.id}">Edit</button>
-            <button class="dash-link-btn dash-link-btn-danger" data-delete-id="${item.id}">Delete</button>
+          <td>
+            <div class="menu-table-actions">
+              <button class="dash-link-btn" data-edit-id="${item.id}">Edit</button>
+              <button class="dash-link-btn dash-link-btn-danger" data-delete-id="${item.id}">Delete</button>
+            </div>
           </td>
         </tr>
       `

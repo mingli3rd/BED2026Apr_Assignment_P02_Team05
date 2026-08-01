@@ -26,20 +26,22 @@ async function listRentalAgreements(req, res) {
       renewal_status: classifyAgreement(agreement),
     }));
 
-    const notifications = classified
-      .filter((a) => a.renewal_status === "expiring_soon" || (a.renewal_status === "expired" && a.status !== "terminated"))
-      .map((a) => {
-        if (a.renewal_status === "expiring_soon") {
-          return {
-            type: "warning",
-            message: `Your rental agreement expires in ${a.days_until_expiry} day${a.days_until_expiry === 1 ? "" : "s"} (on ${new Date(a.end_date).toLocaleDateString("en-SG")}). Renew soon to avoid disruption.`,
-          };
-        }
-        return {
+    const currentAgreement = classified[0];
+    const notifications = [];
+
+    if (currentAgreement && currentAgreement.status !== "terminated") {
+      if (currentAgreement.renewal_status === "expiring_soon") {
+        notifications.push({
+          type: "warning",
+          message: `Your rental agreement expires in ${currentAgreement.days_until_expiry} day${currentAgreement.days_until_expiry === 1 ? "" : "s"} (on ${new Date(currentAgreement.end_date).toLocaleDateString("en-SG")}). Renew soon to avoid disruption.`,
+        });
+      } else if (currentAgreement.renewal_status === "expired") {
+        notifications.push({
           type: "danger",
-          message: `Your rental agreement expired on ${new Date(a.end_date).toLocaleDateString("en-SG")}. Please follow up with your hawker centre operator.`,
-        };
-      });
+          message: `Your rental agreement expired on ${new Date(currentAgreement.end_date).toLocaleDateString("en-SG")}. Please follow up with your hawker centre operator.`,
+        });
+      }
+    }
 
     res.status(200).json({
       agreements: classified,
@@ -51,6 +53,39 @@ async function listRentalAgreements(req, res) {
   }
 }
 
+async function uploadLatestRentalAgreementDocument(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Please choose a PDF, DOC, or DOCX file to upload." });
+    }
+
+    const latestAgreement = await rentalModel.getLatestAgreementByVendor(req.vendor.id);
+
+    if (!latestAgreement) {
+      return res.status(404).json({ error: "No rental agreement was found for this vendor." });
+    }
+
+    const documentPath = `rental-agreements/${req.file.filename}`;
+    const updated = await rentalModel.updateLatestAgreementDocument(req.vendor.id, documentPath);
+
+    if (!updated) {
+      return res.status(404).json({ error: "No rental agreement was updated." });
+    }
+
+    res.status(200).json({
+      message: "Rental agreement document uploaded successfully",
+      agreement: {
+        ...latestAgreement,
+        document_path: documentPath,
+      },
+    });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error updating rental agreement document" });
+  }
+}
+
 module.exports = {
   listRentalAgreements,
+  uploadLatestRentalAgreementDocument,
 };

@@ -2,7 +2,9 @@ const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
 // Total revenue and order count for a vendor, plus a 7-day daily sales trend
-async function getSalesSummary(vendorId) {
+// Total revenue and order count for a vendor, plus a daily sales trend
+// over the last `days` days (default 7)
+async function getSalesSummary(vendorId, days = 7) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
@@ -19,9 +21,10 @@ async function getSalesSummary(vendorId) {
     `;
     const totalsResult = await request.query(totalsQuery);
 
-    // Daily sales trend for the last 7 days (for the line chart)
+    // Daily sales trend for the last `days` days (for the line chart)
     const trendRequest = connection.request();
     trendRequest.input("vendor_id", sql.Int, vendorId);
+    trendRequest.input("days", sql.Int, days);
     const trendQuery = `
       SELECT
         CAST(created_at AS DATE) AS order_date,
@@ -30,7 +33,7 @@ async function getSalesSummary(vendorId) {
       FROM Orders
       WHERE vendor_id = @vendor_id
         AND order_status = 'completed'
-        AND created_at >= DATEADD(DAY, -7, GETDATE())
+        AND created_at >= DATEADD(DAY, -@days, GETDATE())
       GROUP BY CAST(created_at AS DATE)
       ORDER BY order_date ASC
     `;
@@ -38,10 +41,10 @@ async function getSalesSummary(vendorId) {
 
     // The query above only returns rows for days that actually had
     // completed orders. Fill in the missing days with 0 revenue so the
-    // chart always shows a full, evenly-spaced 7-day span instead of
+    // chart always shows a full, evenly-spaced span instead of
     // silently compressing down to just the days with sales.
     const dailyTrend = [];
-    for (let i = 6; i >= 0; i--) {
+    for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split("T")[0]; // "YYYY-MM-DD"

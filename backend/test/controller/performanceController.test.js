@@ -1,8 +1,8 @@
-const performanceController = require("../controllers/performanceController");
-const performanceModel = require("../models/performanceModel");
+const performanceController = require("../../controllers/performanceController");
+const performanceModel = require("../../models/performanceModel");
 
 // Mock the model module
-jest.mock("../models/performanceModel");
+jest.mock("../../models/performanceModel");
 
 describe("performanceController", () => {
   beforeEach(() => {
@@ -25,6 +25,7 @@ describe("performanceController", () => {
       // 2. Mock req with req.vendor.id defined
       const req = {
         vendor: { id: 1 },
+        query: {},
       };
 
       const res = {
@@ -36,7 +37,7 @@ describe("performanceController", () => {
       await performanceController.getStallPerformance(req, res);
 
       // 4. Verify model calls with expected vendorId
-      expect(performanceModel.getSalesSummary).toHaveBeenCalledWith(1);
+      expect(performanceModel.getSalesSummary).toHaveBeenCalledWith(1, 7);
       expect(performanceModel.getTopSellingItems).toHaveBeenCalledWith(1);
       expect(performanceModel.getFeedbackSummary).toHaveBeenCalledWith(1);
       expect(performanceModel.getComplaintsSummary).toHaveBeenCalledWith(1);
@@ -57,6 +58,7 @@ describe("performanceController", () => {
 
       const req = {
         vendor: { id: 1 },
+        query: {},
       };
 
       const res = {
@@ -71,5 +73,47 @@ describe("performanceController", () => {
         error: "Error loading stall performance data",
       });
     });
+
+    it("should use the requested days filter when provided", async () => {
+      const mockSales = { total_orders: 3, total_revenue: 45, daily_trend: [] };
+      performanceModel.getSalesSummary.mockResolvedValue(mockSales);
+      performanceModel.getTopSellingItems.mockResolvedValue([]);
+      performanceModel.getFeedbackSummary.mockResolvedValue({ total_reviews: 0, avg_rating: 0 });
+      performanceModel.getComplaintsSummary.mockResolvedValue({ by_status: [], recent_complaints: [] });
+
+      const req = {
+        vendor: { id: 1 },
+        query: { days: "30" },
+      };
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      await performanceController.getStallPerformance(req, res);
+
+      expect(performanceModel.getSalesSummary).toHaveBeenCalledWith(1, 30);
+    });
+
+    it("should fall back to the default when an unsupported days value is given", async () => {
+      performanceModel.getSalesSummary.mockResolvedValue({ total_orders: 0, total_revenue: 0, daily_trend: [] });
+      performanceModel.getTopSellingItems.mockResolvedValue([]);
+      performanceModel.getFeedbackSummary.mockResolvedValue({ total_reviews: 0, avg_rating: 0 });
+      performanceModel.getComplaintsSummary.mockResolvedValue({ by_status: [], recent_complaints: [] });
+
+      const req = {
+        vendor: { id: 1 },
+        query: { days: "365" }, // not in ALLOWED_DAYS
+      };
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      await performanceController.getStallPerformance(req, res);
+
+      expect(performanceModel.getSalesSummary).toHaveBeenCalledWith(1, 7);
+    });
   });
 });
+

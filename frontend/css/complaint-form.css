@@ -1,0 +1,22 @@
+.report-issue-btn {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+#complaintDescription {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+#complaintDescription:focus {
+  outline: none;
+  border-color: #B23A2F;
+}

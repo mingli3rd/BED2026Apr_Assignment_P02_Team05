@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 const vendorModel = require("../models/vendorModel");
+const hygieneGradeModel = require("../models/hygieneGradeModel");
+const stallProfileSettingsModel = require("../models/stallProfileSettingsModel");
 
 // Register a new vendor account
 async function registerVendor(req, res) {
@@ -75,12 +77,17 @@ async function getDashboard(req, res) {
 
     // Reshape the recent orders into the format the dashboard UI expects
     const recentOrders = overview.recent_orders.map((order) => ({
-      id: `ORD-${order.order_id}`,
+      id: `ORD-${order.vendor_order_number}`,
+      order_number: order.vendor_order_number,
       order_id: order.order_id, // raw numeric id, needed for the status update dropdown
       item: order.items || "(no items recorded)",
       customer: order.customer,
       status: order.order_status,
       time: formatTimeAgo(order.created_at),
+      packaging_type: order.packaging_type,
+      packaging_description: order.packaging_description,
+      special_request: order.special_request,
+      include_cutlery: Boolean(order.include_cutlery),
     }));
 
     res.status(200).json({
@@ -97,6 +104,109 @@ async function getDashboard(req, res) {
   } catch (error) {
     console.error("Controller error:", error);
     res.status(500).json({ error: "Error loading dashboard" });
+  }
+}
+
+// Get the full order list for this vendor, newest first.
+async function listVendorOrders(req, res) {
+  try {
+    const orders = await vendorModel.getOrdersByVendor(req.vendor.id);
+
+    const formattedOrders = orders.map((order) => ({
+      order_id: order.order_id,
+      order_number: order.vendor_order_number,
+      order_label: `ORD-${order.vendor_order_number}`,
+      customer: order.customer,
+      customer_email: order.customer_email,
+      items: order.items || "(no items recorded)",
+      status: order.order_status,
+      payment_method: order.payment_method,
+      payment_status: order.payment_status,
+      packaging_fee: Number(order.packaging_fee || 0),
+      packaging_type: order.packaging_type,
+      packaging_description: order.packaging_description,
+      special_request: order.special_request,
+      include_cutlery: Boolean(order.include_cutlery),
+      total_amount: Number(order.total_amount || 0),
+      created_at: order.created_at,
+      time: formatTimeAgo(order.created_at),
+    }));
+
+    res.status(200).json({ orders: formattedOrders });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading vendor orders" });
+  }
+}
+
+async function getStallProfile(req, res) {
+  try {
+    const profile = await vendorModel.getVendorStallProfile(req.vendor.id);
+
+    if (!profile) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    const itemIds = profile.menu.map((item) => item.id);
+    const settings = await stallProfileSettingsModel.getVendorSettings(req.vendor.id, itemIds);
+    const menu = stallProfileSettingsModel.applySettingsToMenu(profile.menu, settings);
+
+    res.status(200).json({
+      vendor: profile.vendor,
+      menu,
+      settings,
+    });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading stall profile" });
+  }
+}
+
+// Get the logged-in vendor's full hygiene grade history from the main database.
+async function getHygieneGradeHistory(req, res) {
+  try {
+    const history = await hygieneGradeModel.getGradeHistoryByVendor(req.vendor.id);
+    res.status(200).json(history);
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading grade history" });
+  }
+}
+
+async function updateStallProfileSettings(req, res) {
+  try {
+    const profile = await vendorModel.getVendorStallProfile(req.vendor.id);
+
+    if (!profile) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    const itemIds = profile.menu.map((item) => item.id);
+    const settings = await stallProfileSettingsModel.saveVendorSettings(req.vendor.id, req.body || {}, itemIds);
+    res.status(200).json({ message: "Stall profile settings updated", settings });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error updating stall profile settings" });
+  }
+}
+
+async function updateStallBanner(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Please upload a banner image." });
+    }
+
+    const bannerImage = `banners/${req.file.filename}`;
+    const updated = await vendorModel.updateVendorBanner(req.vendor.id, bannerImage);
+
+    if (!updated) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    res.status(200).json({ message: "Stall banner updated successfully", banner_image: bannerImage });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error updating stall banner" });
   }
 }
 
@@ -128,5 +238,10 @@ async function updateOrderStatus(req, res) {
 module.exports = {
   registerVendor,
   getDashboard,
+  listVendorOrders,
+  getStallProfile,
+  getHygieneGradeHistory,
+  updateStallProfileSettings,
+  updateStallBanner,
   updateOrderStatus,
 };

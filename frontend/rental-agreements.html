@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rental Agreements — SG Hawker Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="css/main.css" />
 </head>
+
 <body class="dashboard-body">
 
   <div class="dashboard-shell">
@@ -27,7 +31,7 @@
         <a href="menu.html" class="dash-nav-link">
           <span class="stall-no">02</span> Menu
         </a>
-        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+        <a href="vendor-orders.html" class="dash-nav-link">
           <span class="stall-no">03</span> Orders
         </a>
         <a href="rental-agreements.html" class="dash-nav-link is-active">
@@ -37,11 +41,14 @@
         <a href="hygiene-history.html" class="dash-nav-link">
           <span class="stall-no">05</span> Hygiene Grades
         </a>
-        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+        <a href="stall-profile.html" class="dash-nav-link">
           <span class="stall-no">06</span> Stall Profile
         </a>
         <a href="stall-performance.html" class="dash-nav-link">
           <span class="stall-no">07</span> Performance
+        </a>
+        <a href="packaging.html" class="dash-nav-link">
+          <span class="stall-no">08</span> Packaging
         </a>
       </nav>
 
@@ -69,6 +76,25 @@
         <!-- Notification banners for upcoming/expired agreements -->
         <div id="notificationBanners"></div>
 
+        <div class="dash-panel agreement-upload-panel">
+          <div class="dash-panel-header">
+            <h2>Update Latest Agreement</h2>
+            <span class="dash-panel-note">Upload a PDF, DOC, or DOCX for your newest rental agreement</span>
+          </div>
+
+          <form id="agreementUploadForm" class="agreement-upload-form">
+            <input id="agreementDocumentInput" type="file"
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              style="display: none;" />
+            <div class="agreement-upload-controls">
+              <button type="button" id="chooseAgreementDocumentBtn" class="dash-link-btn">Choose Document</button>
+              <span id="agreementDocumentName" class="agreement-upload-filename muted">No file selected</span>
+              <button type="submit" id="uploadAgreementBtn" class="dash-link-btn">Upload to Latest Agreement</button>
+            </div>
+            <p id="agreementUploadMessage" class="form-message" style="margin-top: 12px;"></p>
+          </form>
+        </div>
+
         <!-- Agreement history -->
         <div class="dash-panel">
           <div class="dash-panel-header">
@@ -92,4 +118,5 @@
   <script src="js/main.js"></script>
   <script src="js/rental-agreements.js"></script>
 </body>
+
 </html>

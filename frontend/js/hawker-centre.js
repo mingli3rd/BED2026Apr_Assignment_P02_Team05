@@ -79,7 +79,7 @@ function renderStallCards(stalls) {
             ${stall.grade ? `<span class="grade-badge ${gradeClass(stall.grade)}">${stall.grade}</span>` : ""}
           </div>
           <h3>${stall.business_name}</h3>
-          <span class="directory-card-link">View Menu →</span>
+          <span class="directory-card-link">Order Now →</span>
         </a>
       `
     )

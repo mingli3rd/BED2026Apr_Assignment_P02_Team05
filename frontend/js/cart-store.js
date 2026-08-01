@@ -121,6 +121,12 @@ function removeCartItemAt(index) {
 
 function clearCartStore() {
   saveCart([]);
+  // Packaging choices and special requests are keyed by vendor_id, not
+  // tied to specific cart line items, so they don't get cleaned up by
+  // removing items one by one — clear them out here instead, once the
+  // whole cart (and therefore every order) is done.
+  localStorage.removeItem(PACKAGING_CHOICE_KEY);
+  localStorage.removeItem(SPECIAL_REQUEST_KEY);
 }
 
 function getCartItemCount() {
@@ -155,6 +161,56 @@ function updateCartBadge() {
   } else {
     badge.style.display = "none";
   }
+}
+
+// =========================================================
+// PER-VENDOR PACKAGING CHOICE + SPECIAL REQUEST
+//
+// Both are order-level (one per vendor group), not per cart line item, so
+// they're stored separately from the cart array itself, keyed by vendor_id.
+// Set on the cart page, read on the checkout page, sent to the backend as
+// `vendor_options` at payment time (see checkout.js).
+// =========================================================
+
+const PACKAGING_CHOICE_KEY = "hawkerhub_packaging_choices"; // { [vendor_id]: packaging_option_id | null }
+const SPECIAL_REQUEST_KEY = "hawkerhub_special_requests"; // { [vendor_id]: "free text" }
+
+function readJsonStore(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : {};
+  } catch (error) {
+    console.error(`Error reading ${key} from storage:`, error);
+    return {};
+  }
+}
+
+function writeJsonStore(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+// packagingOptionId should be a number (the chosen option's id) or null
+// for "standard packaging, no eco option selected"
+function setPackagingChoice(vendorId, packagingOptionId) {
+  const choices = readJsonStore(PACKAGING_CHOICE_KEY);
+  choices[vendorId] = packagingOptionId;
+  writeJsonStore(PACKAGING_CHOICE_KEY, choices);
+}
+
+function getPackagingChoice(vendorId) {
+  const choices = readJsonStore(PACKAGING_CHOICE_KEY);
+  return choices[vendorId] ?? null;
+}
+
+function setSpecialRequest(vendorId, text) {
+  const requests = readJsonStore(SPECIAL_REQUEST_KEY);
+  requests[vendorId] = text;
+  writeJsonStore(SPECIAL_REQUEST_KEY, requests);
+}
+
+function getSpecialRequest(vendorId) {
+  const requests = readJsonStore(SPECIAL_REQUEST_KEY);
+  return requests[vendorId] || "";
 }
 
 // Run on every page load

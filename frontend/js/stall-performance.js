@@ -13,11 +13,24 @@ const CHART_COLORS = {
   tealMid: "#1F473D",
 };
 
+const ALLOWED_DAYS = [7, 30, 90];
+let currentDays = 7;
+
+// Keep a handle on the sales chart instance so we can destroy it before
+// re-rendering — otherwise Chart.js stacks a new chart on the same canvas
+// every time the filter changes.
+let salesChartInstance = null;
+
 function renderSalesChart(dailyTrend) {
   const canvas = document.getElementById("salesChart");
   const emptyState = document.getElementById("salesEmptyState");
 
   if (typeof Chart === "undefined") return; // charting library unavailable
+
+  if (salesChartInstance) {
+    salesChartInstance.destroy();
+    salesChartInstance = null;
+  }
 
   if (!dailyTrend || dailyTrend.length === 0) {
     canvas.style.display = "none";
@@ -33,7 +46,7 @@ function renderSalesChart(dailyTrend) {
   );
   const revenues = dailyTrend.map((day) => day.daily_revenue);
 
-  new Chart(canvas, {
+  salesChartInstance = new Chart(canvas, {
     type: "line",
     data: {
       labels,
@@ -46,15 +59,32 @@ function renderSalesChart(dailyTrend) {
           fill: true,
           tension: 0.3,
           pointBackgroundColor: CHART_COLORS.mustard,
+          // With up to 90 points, dots get noisy — hide them past 7 days.
+          pointRadius: revenues.length > 14 ? 0 : 3,
         },
       ],
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: CHART_COLORS.muted }, grid: { color: "rgba(245,241,230,0.08)" } },
-        y: { ticks: { color: CHART_COLORS.muted }, grid: { color: "rgba(245,241,230,0.08)" }, beginAtZero: true },
+        x: {
+          ticks: {
+            color: CHART_COLORS.muted,
+            // Thin out x-axis labels for longer ranges so they don't overlap.
+            maxTicksLimit: revenues.length > 14 ? 10 : undefined,
+          },
+          grid: { color: "rgba(245,241,230,0.08)" },
+        },
+        y: { 
+          ticks: {
+            color: CHART_COLORS.muted,
+            callback: (value) => `$${value}`
+          },           
+          grid: { color: "rgba(245,241,230,0.08)" }, 
+          beginAtZero: true 
+        },
       },
     },
   });
@@ -167,12 +197,21 @@ function renderComplaintsList(complaints) {
     .join("");
 }
 
-async function loadPerformance() {
+// Fetches the whole dashboard payload for a given days window.
+// The API returns everything in one response, so changing the filter
+// re-fetches all sections, but only the sales chart actually changes
+// with `days` — the rest just re-renders with the same data.
+async function fetchPerformanceData(days) {
+  const response = await fetch(`${apiBaseUrl}/api/vendor/performance?days=${days}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return response;
+}
+
+async function loadPerformance(days = currentDays) {
   try {
-    const response = await fetch(`${apiBaseUrl}/api/vendor/performance`, {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await fetchPerformanceData(days);
 
     if (response.status === 200) {
       const data = await response.json();
@@ -214,6 +253,27 @@ async function loadPerformance() {
     dashboardError.textContent = "Could not load performance data. Please try again.";
     dashboardError.style.display = "block";
   }
+}
+
+// Sales range filter buttons (7D / 30D / 90D)
+function initSalesRangeFilter() {
+  const group = document.getElementById("salesRangeFilter");
+  if (!group) return;
+
+  group.addEventListener("click", (event) => {
+    const btn = event.target.closest(".dash-filter-btn");
+    if (!btn) return;
+
+    const days = parseInt(btn.dataset.days, 10);
+    if (!ALLOWED_DAYS.includes(days) || days === currentDays) return;
+
+    currentDays = days;
+
+    group.querySelectorAll(".dash-filter-btn").forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+
+    loadPerformance(currentDays);
+  });
 }
 
 document.getElementById("logoutBtn")?.addEventListener("click", async () => {
@@ -273,5 +333,6 @@ async function ensureChartJsLoaded() {
     // Charts won't render, but let loadPerformance still populate the
     // stat cards and lists so the page isn't completely blank.
   }
+  initSalesRangeFilter();
   loadPerformance();
 })();

@@ -1,0 +1,18 @@
+{
+  "1": {
+    "layout_mode": "grid",
+    "recommended_item_ids": [
+      1
+    ],
+    "best_seller_item_ids": [
+      2
+    ],
+    "item_order": [
+      1,
+      2,
+      3,
+      4,
+      17
+    ]
+  }
+}

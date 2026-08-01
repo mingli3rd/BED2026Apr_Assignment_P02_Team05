@@ -27,6 +27,12 @@ const checkoutSchema = Joi.object({
         category: Joi.string().optional(),
         image: Joi.string().allow(null, "").optional(),
         price: Joi.number().positive().required(),
+        // Present on every cart item from cart-store.js (used for the
+        // fallback dish icon when there's no uploaded photo) — allowed
+        // through as optional/nullable rather than stripped, since Joi
+        // rejects unknown keys by default.
+        category: Joi.string().allow("", null).optional(),
+        image: Joi.string().allow("", null).optional(),
         quantity: Joi.number().integer().min(1).required(),
         add_ons: Joi.array()
           .items(
@@ -52,6 +58,19 @@ const checkoutSchema = Joi.object({
   guest_email: Joi.string().email().allow("").optional().messages({
     "string.email": "Please enter a valid email address.",
   }),
+  // Per-vendor packaging choice, special request, and cutlery preference.
+  // Keyed by vendor_id (a string key here since JSON object keys are always
+  // strings, even though the frontend builds it from numeric vendor IDs).
+  vendor_options: Joi.object()
+    .pattern(
+      Joi.string(),
+      Joi.object({
+        packaging_option_id: Joi.number().integer().allow(null).optional(),
+        special_request: Joi.string().max(500).allow("", null).optional(),
+        include_cutlery: Joi.boolean().optional(),
+      })
+    )
+    .optional(),
 });
 
 function validateCheckout(req, res, next) {

@@ -1,5 +1,4 @@
 const apiBaseUrl = "http://localhost:3000";
-const neaApiBaseUrl = "http://localhost:4000";
 
 function gradeClass(grade) {
   return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "";
@@ -14,9 +13,11 @@ async function loadHygieneHistory() {
       return;
     }
     const sessionData = await sessionResponse.json();
-    const vendorId = sessionData.vendor.id;
 
-    const response = await fetch(`${neaApiBaseUrl}/api/nea/public/vendors/${vendorId}/grades`);
+    const response = await fetch(`${apiBaseUrl}/api/vendor/hygiene-history`, {
+      method: "GET",
+      credentials: "include",
+    });
 
     if (response.status !== 200) {
       throw new Error(`Unexpected status: ${response.status}`);

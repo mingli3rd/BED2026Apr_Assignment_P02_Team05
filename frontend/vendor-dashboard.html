@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
 </head>
 <body class="dashboard-body">
 
@@ -43,6 +44,9 @@
         <a href="stall-performance.html" class="dash-nav-link">
           <span class="stall-no">07</span> Performance
         </a>
+        <a href="packaging.html" class="dash-nav-link">
+          <span class="stall-no">08</span> Packaging
+        </a>
       </nav>
 
       <div class="dash-sidebar-footer">
@@ -65,7 +69,27 @@
             <p class="eyebrow">Vendor Dashboard</p>
             <h1 class="dash-welcome" id="welcomeMessage">Welcome back.</h1>
           </div>
-          <span class="permit-status" id="approvalBadge">STATUS</span>
+
+          <div style="display:flex; align-items:center; gap:14px;">
+            <!-- Notification bell: complaints (and later, orders) land here in real time -->
+            <div class="notif-bell-wrap" id="notifBellWrap">
+              <button class="notif-bell-btn" id="notifBellBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+                🔔
+                <span class="notif-bell-count" id="notifBellCount" style="display:none;">0</span>
+              </button>
+              <div class="notif-bell-panel" id="notifBellPanel" style="display:none;">
+                <div class="notif-bell-panel-header">
+                  <span>Notifications</span>
+                  <button id="notifMarkAllBtn" class="notif-mark-all-btn">Mark all read</button>
+                </div>
+                <div id="notifBellList" class="notif-bell-list">
+                  <p class="notif-bell-empty">Loading...</p>
+                </div>
+              </div>
+            </div>
+
+            <span class="permit-status" id="approvalBadge">STATUS</span>
+          </div>
         </div>
 
         <!-- Stat cards -->
@@ -106,6 +130,9 @@
                 <th>Item</th>
                 <th>Customer</th>
                 <th>Status</th>
+                <th>Packaging</th>
+                <th>Cutlery</th>
+                <th>Special Request</th>
                 <th>Time</th>
               </tr>
             </thead>
@@ -116,6 +143,32 @@
 
           <div id="ordersEmptyState" class="dash-empty-state" style="display: none;">
             <p>No orders yet. Once patrons start ordering, they'll show up here.</p>
+          </div>
+        </div>
+
+        <!-- Complaints -->
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2>Complaints</h2>
+            <span class="dash-panel-note">Update status as you address each one</span>
+          </div>
+
+          <table class="dash-table" id="complaintsTable">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Reported</th>
+              </tr>
+            </thead>
+            <tbody id="complaintsTableBody">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+
+          <div id="complaintsEmptyState" class="dash-empty-state" style="display: none;">
+            <p>No complaints so far — nice work.</p>
           </div>
         </div>
 

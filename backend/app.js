@@ -3,12 +3,9 @@ const sql = require("mssql");
 const dotenv = require("dotenv");
 const path = require("path");
 const cookieParser = require("cookie-parser");
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger-output.json");
 
 // Load environment variables
 dotenv.config();
-
 
 // --- Vendor ---
 const vendorController = require("./controllers/vendorController");
@@ -21,7 +18,7 @@ const { validatePatronRegister } = require("./middlewares/patronValidation");
 // --- Auth (login/logout, shared between vendor and patron) ---
 const authController = require("./controllers/authController");
 const { validateLogin } = require("./middlewares/loginValidation");
-const { verifyVendorToken, verifyPatronToken } = require("./middlewares/authMiddleware");
+const { verifyVendorToken, verifyPatronToken, attachPatronIfPresent } = require("./middlewares/authMiddleware");
 
 // --- Stall Performance ---
 const performanceController = require("./controllers/performanceController");
@@ -55,6 +52,15 @@ const favouriteController = require("./controllers/favouriteController");
 const { validateFavourite, validateProfileUpdate } = require("./middlewares/favouriteValidation");
 const profileController = require("./controllers/profileController");
 
+// --- Complaints & Notifications ---
+const complaintController = require("./controllers/complaintController");
+const { validateComplaint } = require("./middlewares/complaintValidation");
+const notificationController = require("./controllers/notificationController");
+
+// --- Eco-Friendly Packaging ---
+const packagingController = require("./controllers/packagingController");
+const { validatePackagingOption } = require("./middlewares/packagingValidation");
+
 
 // Create Express app
 const app = express();
@@ -74,31 +80,29 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 // --- Serve uploaded vendor/menu images ---
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Serve the Swagger UI at a specific route
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 // ===================== VENDOR ROUTES =====================
 // uploadBannerImage runs first to parse the multipart form data
 // (text fields + the banner file), process/auto-orient the image, then
 // hand off to validation and the controller
-app.post("/api/auth/vendor/register", ...uploadBannerImage, validateVendorRegister, vendorController.registerVendor); //yeong jong
+app.post("/api/auth/vendor/register", ...uploadBannerImage, validateVendorRegister, vendorController.registerVendor);
+app.get("/api/vendor/orders", verifyVendorToken, vendorController.listVendorOrders);
 
 // ===================== PATRON ROUTES =====================
-app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron); //yeong jong
+app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron);
 
 // ===================== AUTH ROUTES (LOGIN / LOGOUT — shared by vendor + patron) =====================
-app.post("/api/auth/login", validateLogin, authController.login); //yeong jong
-app.post("/api/auth/logout", authController.logout); //yeong jong
-app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor); //yeong jong
-app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron); //yeong jong
+app.post("/api/auth/login", validateLogin, authController.login);
+app.post("/api/auth/logout", authController.logout);
+app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor);
+app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron);
 
 // ===================== PROTECTED VENDOR ROUTES =====================
-app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard); //yeong jong
+app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
 app.put("/api/vendor/orders/:id/status", verifyVendorToken, vendorController.updateOrderStatus);
 
 // ===================== PROTECTED PATRON ROUTES =====================
-app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders); //yeong jong
+app.get("/api/patron/orders", verifyPatronToken, patronController.getPatronOrders);
 
 // ===================== MENU MANAGEMENT ROUTES (vendor-facing) =====================
 app.get("/api/vendor/menu", verifyVendorToken, menuController.listMenuItems);
@@ -119,11 +123,11 @@ app.get("/api/hawker-centres/search", stallController.searchHawkerCentres);
 app.get("/api/hawker-centres/:id/stalls", stallController.getHawkerCentreStalls);
 
 // ===================== CART (logged-in patrons only — guests use localStorage) =====================
-app.post("/api/cart", verifyPatronToken, validateCartItem, cartController.addToCart); //yeong jong
-app.get("/api/cart", verifyPatronToken, cartController.getCart); //yeong jong
-app.put("/api/cart/:id", verifyPatronToken, cartController.updateCartItem); //yeong jong
-app.delete("/api/cart/:id", verifyPatronToken, cartController.removeCartItem); //yeong jong
-app.delete("/api/cart", verifyPatronToken, cartController.clearCart); //yeong jong
+app.post("/api/cart", verifyPatronToken, validateCartItem, cartController.addToCart);
+app.get("/api/cart", verifyPatronToken, cartController.getCart);
+app.put("/api/cart/:id", verifyPatronToken, cartController.updateCartItem);
+app.delete("/api/cart/:id", verifyPatronToken, cartController.removeCartItem);
+app.delete("/api/cart", verifyPatronToken, cartController.clearCart);
 
 // ===================== CHECKOUT / ORDERS (works for guests AND logged-in patrons) =====================
 app.post("/api/orders", validateCheckout, checkoutController.createOrder);
@@ -144,6 +148,26 @@ app.get("/api/patron/favourites", verifyPatronToken, favouriteController.listFav
 // ===================== PROFILE (patron-facing) =====================
 app.get("/api/patron/profile", verifyPatronToken, profileController.getProfile);
 app.put("/api/patron/profile", verifyPatronToken, validateProfileUpdate, profileController.updateProfile);
+
+// ===================== COMPLAINTS (guest/patron submission, vendor management) =====================
+// attachPatronIfPresent is optional auth — works for guests AND logged-in patrons,
+// unlike verifyPatronToken which would reject guests outright.
+app.post("/api/complaints", attachPatronIfPresent, validateComplaint, complaintController.submitComplaint);
+app.get("/api/vendor/complaints", verifyVendorToken, complaintController.getMyComplaints);
+app.put("/api/vendor/complaints/:id/status", verifyVendorToken, complaintController.updateComplaintStatus);
+
+// ===================== NOTIFICATIONS (vendor-facing) =====================
+app.get("/api/vendor/notifications", verifyVendorToken, notificationController.getMyNotifications);
+app.get("/api/vendor/notifications/unread-count", verifyVendorToken, notificationController.getUnreadCount);
+app.put("/api/vendor/notifications/:id/read", verifyVendorToken, notificationController.markAsRead);
+app.put("/api/vendor/notifications/read-all", verifyVendorToken, notificationController.markAllAsRead);
+
+// ===================== ECO-FRIENDLY PACKAGING =====================
+app.get("/api/vendor/packaging", verifyVendorToken, packagingController.getMyOptions);
+app.post("/api/vendor/packaging", verifyVendorToken, validatePackagingOption, packagingController.createMyOption);
+app.put("/api/vendor/packaging/:id", verifyVendorToken, validatePackagingOption, packagingController.updateMyOption);
+app.delete("/api/vendor/packaging/:id", verifyVendorToken, packagingController.deleteMyOption);
+app.get("/api/stalls/:vendorId/packaging", packagingController.listPublicOptions); // public — cart/checkout/stall page all read this, no auth
 
 // Start server
 app.listen(port, () => {
