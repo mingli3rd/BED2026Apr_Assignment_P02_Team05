@@ -1,9 +1,9 @@
-const patronController = require("../controllers/patronController");
-const patronModel = require("../models/patronModel");
+const patronController = require("../../controllers/patronController");
+const patronModel = require("../../models/patronModel");
 const bcrypt = require("bcrypt");
 
 // Mock the dependencies
-jest.mock("../models/patronModel");
+jest.mock("../../models/patronModel");
 jest.mock("bcrypt");
 
 describe("patronController", () => {

@@ -1,4 +1,4 @@
-const performanceModel = require("../models/performanceModel");
+const performanceModel = require("../../models/performanceModel");
 const sql = require("mssql");
 
 // Mock the mssql library completely
