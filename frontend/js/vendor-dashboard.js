@@ -47,7 +47,7 @@ function renderOrdersTable(orders) {
 
       return `
         <tr>
-          <td class="mono">#${order.order_number || order.order_id}</td>
+          <td class="mono">${order.id}</td>
           <td>${order.item}</td>
           <td>${order.customer}</td>
           <td>
@@ -55,6 +55,9 @@ function renderOrdersTable(orders) {
               ${optionsHtml}
             </select>
           </td>
+          <td>${order.packaging_type === "eco" ? "🌱 " : ""}${order.packaging_description || "Standard packaging"}</td>
+          <td>${order.include_cutlery ? "✅ Yes" : "🚫 No"}</td>
+          <td class="muted">${order.special_request || "—"}</td>
           <td class="mono muted">${order.time}</td>
         </tr>
       `;

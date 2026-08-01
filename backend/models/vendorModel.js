@@ -255,6 +255,10 @@ async function getOrdersByVendor(vendorId) {
         o.payment_method,
         o.payment_status,
         o.packaging_fee,
+        o.packaging_type,
+        o.packaging_description,
+        o.special_request,
+        o.include_cutlery,
         o.created_at,
         ISNULL(p.name, 'Guest') AS customer,
         ISNULL(p.email, o.guest_email) AS customer_email,
@@ -288,7 +292,7 @@ async function getOrdersByVendor(vendorId) {
 
 // Get real overview stats for the vendor dashboard: pending order count,
 // menu item count, average rating, today's revenue, and the 5 most recent
-// orders (with item names and customer name resolved).
+// orders (with item names, customer name, packaging, and special request resolved).
 async function getVendorOverview(vendorId) {
   let connection;
   try {
@@ -332,8 +336,9 @@ async function getVendorOverview(vendorId) {
         AND CAST(created_at AS DATE) = CAST(GETDATE() AS DATE)
     `);
 
-    // 5 most recent orders, with item names concatenated and customer
-    // resolved to the patron's name (or "Guest" if patron_id is NULL)
+    // 5 most recent orders, with item names concatenated, customer
+    // resolved to the patron's name (or "Guest" if patron_id is NULL),
+    // and the packaging choice + special request for this order
     const ordersRequest = connection.request();
     ordersRequest.input("vendor_id", sql.Int, vendorId);
     const ordersResult = await ordersRequest.query(`
@@ -342,6 +347,10 @@ async function getVendorOverview(vendorId) {
         ROW_NUMBER() OVER (ORDER BY o.created_at ASC, o.id ASC) AS vendor_order_number,
         o.order_status,
         o.created_at,
+        o.packaging_type,
+        o.packaging_description,
+        o.special_request,
+        o.include_cutlery,
         ISNULL(p.name, 'Guest') AS customer,
         STUFF((
           SELECT ', ' + mi.name + CASE WHEN oi.quantity > 1 THEN ' x' + CAST(oi.quantity AS VARCHAR) ELSE '' END

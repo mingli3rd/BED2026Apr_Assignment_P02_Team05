@@ -18,10 +18,22 @@ function getOptionalPatronId(req) {
 
 async function createOrder(req, res) {
   try {
-    const { cart_items, payment_method, force_fail, guest_email } = req.body;
+    const { cart_items, payment_method, force_fail, guest_email, vendor_options } = req.body;
     const patronId = getOptionalPatronId(req);
 
-    const result = await checkoutModel.createOrdersFromCart(patronId, cart_items, payment_method, force_fail, guest_email);
+    // vendor_options is keyed by vendor_id: { [vendor_id]: { packaging_option_id: number|null, special_request: "..." } }
+    // Sent by the cart/checkout pages — see cart-store.js's per-vendor
+    // packaging choice + special request storage. Defaults to {} so
+    // existing clients that don't send it still work (falls back to
+    // standard packaging, no special request).
+    const result = await checkoutModel.createOrdersFromCart(
+      patronId,
+      cart_items,
+      payment_method,
+      force_fail,
+      guest_email,
+      vendor_options || {}
+    );
 
     if (!result.success) {
       // Payment failed — nothing was written, cart stays intact client-side

@@ -1,0 +1,96 @@
+/* =========================================================
+   Eco-friendly packaging picker + special request box
+   Kept as its own stylesheet, same reasoning as notifications.css /
+   complaint-form.css: avoids fighting with selectors already in main.css.
+   ========================================================= */
+
+.packaging-picker {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.packaging-picker-label {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.packaging-standard-note {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.packaging-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.packaging-option-row:has(input:checked) {
+  border-color: #8FD6A2;
+  background: rgba(62, 122, 78, 0.18);
+}
+
+.packaging-option-row input {
+  margin-right: 8px;
+}
+
+.packaging-option-surcharge {
+  font-family: "IBM Plex Mono", monospace;
+  color: #8FD6A2;
+  font-weight: 600;
+}
+
+.special-request-field {
+  margin-top: 14px;
+}
+
+.special-request-field textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.special-request-field textarea:focus {
+  outline: none;
+  border-color: #C98A2C;
+}
+
+/* Eco badge on the stall page (reused from the hygiene grade badge pattern) */
+.eco-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3E7A4E;
+  background: rgba(62, 122, 78, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-left: 8px;
+  vertical-align: middle;
+}

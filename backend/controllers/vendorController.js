@@ -84,6 +84,10 @@ async function getDashboard(req, res) {
       customer: order.customer,
       status: order.order_status,
       time: formatTimeAgo(order.created_at),
+      packaging_type: order.packaging_type,
+      packaging_description: order.packaging_description,
+      special_request: order.special_request,
+      include_cutlery: Boolean(order.include_cutlery),
     }));
 
     res.status(200).json({
@@ -119,6 +123,10 @@ async function listVendorOrders(req, res) {
       payment_method: order.payment_method,
       payment_status: order.payment_status,
       packaging_fee: Number(order.packaging_fee || 0),
+      packaging_type: order.packaging_type,
+      packaging_description: order.packaging_description,
+      special_request: order.special_request,
+      include_cutlery: Boolean(order.include_cutlery),
       total_amount: Number(order.total_amount || 0),
       created_at: order.created_at,
       time: formatTimeAgo(order.created_at),

@@ -2,7 +2,40 @@ const apiBaseUrl = "http://localhost:3000";
 const PACKAGING_FEE_PER_ITEM = 0.30;
 redirectIfVendor();
 
-function renderCheckoutSummary() {
+// Fetches a vendor's currently-enabled eco packaging options (public route).
+async function fetchPackagingOptions(vendorId) {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/packaging`);
+    if (response.status !== 200) return [];
+    return await response.json();
+  } catch (error) {
+    console.error(`Error loading packaging options for vendor ${vendorId}:`, error);
+    return [];
+  }
+}
+
+// Given a vendor's fetched options + the customer's stored choice, works
+// out what to display and charge for that vendor's order. Mirrors the
+// backend's resolvePackaging() logic in checkoutModel.js exactly, so the
+// price shown here matches what actually gets charged.
+function resolveGroupPackaging(itemCount, options, choiceOptionId) {
+  const standardFee = itemCount * PACKAGING_FEE_PER_ITEM;
+
+  if (choiceOptionId) {
+    const chosen = options.find((o) => String(o.id) === String(choiceOptionId));
+    if (chosen) {
+      const ecoFeePerItem = PACKAGING_FEE_PER_ITEM + Number(chosen.surcharge);
+      return {
+        label: `🌱 ${chosen.description}`,
+        fee: itemCount * ecoFeePerItem,
+      };
+    }
+  }
+
+  return { label: "Standard packaging", fee: standardFee };
+}
+
+async function renderCheckoutSummary() {
   const cart = getCart();
 
   if (cart.length === 0) {
@@ -12,25 +45,40 @@ function renderCheckoutSummary() {
   }
 
   const groups = getCartVendorGroups();
+  const vendorIds = Object.keys(groups);
   const orderGroupsContainer = document.getElementById("orderGroups");
 
+  // Fetch each vendor's packaging options in parallel so the fee shown
+  // here matches what the customer picked on the cart page
+  const packagingByVendor = {};
+  await Promise.all(
+    vendorIds.map(async (vendorId) => {
+      packagingByVendor[vendorId] = await fetchPackagingOptions(vendorId);
+    })
+  );
+
   let subtotal = 0;
+  let packagingTotal = 0;
   let orderIndex = 1;
 
-  orderGroupsContainer.innerHTML = Object.keys(groups)
+  orderGroupsContainer.innerHTML = vendorIds
     .map((vendorId) => {
       const group = groups[vendorId];
       const groupSubtotal = group.items.reduce((sum, item) => sum + getCartLineTotal(item), 0);
       subtotal += groupSubtotal;
 
       const itemCount = group.items.reduce((sum, item) => sum + item.quantity, 0);
-      const packaging = itemCount * PACKAGING_FEE_PER_ITEM;
+      const choiceOptionId = getPackagingChoice(vendorId);
+      const packaging = resolveGroupPackaging(itemCount, packagingByVendor[vendorId], choiceOptionId);
+      packagingTotal += packaging.fee;
+
+      const specialRequest = getSpecialRequest(vendorId);
 
       const html = `
         <div class="dash-panel">
           <div class="dash-panel-header">
             <h2>Order #${orderIndex}: ${group.vendor_name}</h2>
-            <span class="mono">$${(groupSubtotal + packaging).toFixed(2)}</span>
+            <span class="mono">$${(groupSubtotal + packaging.fee).toFixed(2)}</span>
           </div>
           <ul class="dash-list">
             ${group.items
@@ -45,6 +93,20 @@ function renderCheckoutSummary() {
               })
               .join("")}
           </ul>
+          <div class="breakdown-row" style="margin-top:10px;">
+            <span>Packaging: ${packaging.label}</span>
+            <span class="mono muted">$${packaging.fee.toFixed(2)}</span>
+          </div>
+          <label class="checkbox-field" style="margin-top:8px;">
+            <input type="checkbox" class="cutlery-checkbox" data-vendor-id="${vendorId}" checked />
+            <span>Include cutlery</span>
+          </label>
+          ${specialRequest ? `
+            <div class="breakdown-row">
+              <span>Special request</span>
+              <span class="muted" style="text-align:right; max-width:60%;">${specialRequest}</span>
+            </div>
+          ` : ""}
         </div>
       `;
       orderIndex++;
@@ -52,13 +114,26 @@ function renderCheckoutSummary() {
     })
     .join("");
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const packagingFee = totalItems * PACKAGING_FEE_PER_ITEM;
-  const total = subtotal + packagingFee;
+  const total = subtotal + packagingTotal;
 
   document.getElementById("breakdownSubtotal").textContent = `$${subtotal.toFixed(2)}`;
-  document.getElementById("breakdownPackaging").textContent = `$${packagingFee.toFixed(2)}`;
+  document.getElementById("breakdownPackaging").textContent = `$${packagingTotal.toFixed(2)}`;
   document.getElementById("breakdownTotal").textContent = `$${total.toFixed(2)}`;
+}
+
+// Builds the vendor_options payload the backend expects:
+// { [vendor_id]: { packaging_option_id, special_request, include_cutlery } }
+function buildVendorOptions(vendorIds) {
+  const vendorOptions = {};
+  vendorIds.forEach((vendorId) => {
+    const cutleryCheckbox = document.querySelector(`.cutlery-checkbox[data-vendor-id="${vendorId}"]`);
+    vendorOptions[vendorId] = {
+      packaging_option_id: getPackagingChoice(vendorId) || null,
+      special_request: getSpecialRequest(vendorId),
+      include_cutlery: cutleryCheckbox ? cutleryCheckbox.checked : true,
+    };
+  });
+  return vendorOptions;
 }
 
 async function submitPayment() {
@@ -66,6 +141,7 @@ async function submitPayment() {
   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
   const forceFail = document.getElementById("simulateFailure").checked;
   const guestEmail = document.getElementById("guestEmail").value.trim();
+  const vendorIds = Object.keys(getCartVendorGroups());
 
   const payButton = document.getElementById("payButton");
   const messageEl = document.getElementById("checkoutMessage");
@@ -84,6 +160,7 @@ async function submitPayment() {
         payment_method: paymentMethod,
         force_fail: forceFail,
         guest_email: guestEmail,
+        vendor_options: buildVendorOptions(vendorIds),
       }),
     });
 
@@ -146,7 +223,20 @@ function showSuccessState(orders, isGuest) {
             <span class="mono">$${Number(order.total).toFixed(2)}</span>
           </div>
           <div class="breakdown-row"><span>Subtotal</span><span class="mono">$${Number(order.subtotal).toFixed(2)}</span></div>
-          <div class="breakdown-row"><span>Packaging</span><span class="mono">$${Number(order.packaging_fee).toFixed(2)}</span></div>
+          <div class="breakdown-row">
+            <span>Packaging: ${order.packaging_type === "eco" ? "🌱 " : ""}${order.packaging_description}</span>
+            <span class="mono">$${Number(order.packaging_fee).toFixed(2)}</span>
+          </div>
+          <div class="breakdown-row">
+            <span>Cutlery</span>
+            <span class="muted">${order.include_cutlery ? "Included" : "Not included"}</span>
+          </div>
+          ${order.special_request ? `
+            <div class="breakdown-row">
+              <span>Special request</span>
+              <span class="muted" style="text-align:right; max-width:60%;">${order.special_request}</span>
+            </div>
+          ` : ""}
         </div>
       `
     )

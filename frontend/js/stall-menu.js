@@ -79,11 +79,30 @@ async function loadStallGrade(vendorId) {
   }
 }
 
+// Fetches this stall's currently-enabled eco packaging options and shows
+// a badge if there's at least one. Uses apiBaseUrl (main backend), not
+// neaApiBaseUrl — packaging lives in the main database, unlike hygiene
+// grades which live in the separate NEA service.
+async function loadStallEcoBadge(vendorId) {
+  const badge = document.getElementById("stallEcoBadge");
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/packaging`);
+    if (response.status !== 200) return;
+
+    const options = await response.json();
+    if (options.length > 0) {
+      badge.style.display = "inline-flex";
+      badge.title = options.map((o) => o.description).join(", ");
+    }
+  } catch (error) {
+    console.error("Error loading eco packaging badge:", error);
+  }
+}
+
 let currentVendorId = null;
 let currentMenu = [];
 let modalItem = null;
 let activeCategory = "All";
-let currentLayoutMode = "list";
 
 function getVendorIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -122,7 +141,7 @@ function renderCategoryChips(menu) {
 function applyFilters() {
   const searchTerm = document.getElementById("menuSearchInput").value.trim().toLowerCase();
 
-  let filtered = [...currentMenu];
+  let filtered = currentMenu;
 
   if (activeCategory !== "All") {
     filtered = filtered.filter((item) => item.category === activeCategory);
@@ -130,15 +149,6 @@ function applyFilters() {
 
   if (searchTerm) {
     filtered = filtered.filter((item) => item.name.toLowerCase().includes(searchTerm));
-  }
-
-  if (currentLayoutMode === "spotlight") {
-    filtered.sort((a, b) => {
-      const aWeight = (a.is_recommended ? 2 : 0) + (a.is_best_seller ? 1 : 0);
-      const bWeight = (b.is_recommended ? 2 : 0) + (b.is_best_seller ? 1 : 0);
-      if (aWeight !== bWeight) return bWeight - aWeight;
-      return 0;
-    });
   }
 
   renderMenu(filtered);
@@ -157,7 +167,7 @@ function renderMenu(menu) {
     return;
   }
 
-  grid.style.display = "";
+  grid.style.display = "flex";
   noResults.style.display = "none";
 
   grid.innerHTML = menu
@@ -169,10 +179,6 @@ function renderMenu(menu) {
             <h3>${item.name}</h3>
             <span class="mono">$${Number(item.price).toFixed(2)}</span>
             ${item.category ? `<span class="muted">${item.category}</span>` : ""}
-            <div class="stall-item-tags">
-              ${item.is_recommended ? '<span class="item-tag item-tag-recommended">Recommended</span>' : ""}
-              ${item.is_best_seller ? '<span class="item-tag item-tag-bestseller">Best Seller</span>' : ""}
-            </div>
           </div>
           <button class="btn btn-primary btn-small" data-item-id="${item.id}">+ Add</button>
         </div>
@@ -183,17 +189,6 @@ function renderMenu(menu) {
   grid.querySelectorAll("[data-item-id]").forEach((btn) => {
     btn.addEventListener("click", () => openAddOnModal(btn.dataset.itemId));
   });
-}
-
-function applyLayoutMode(layoutMode) {
-  const grid = document.getElementById("menuGrid");
-  grid.classList.remove("layout-grid", "layout-spotlight");
-
-  if (layoutMode === "grid") {
-    grid.classList.add("layout-grid");
-  } else if (layoutMode === "spotlight") {
-    grid.classList.add("layout-spotlight");
-  }
 }
 
 // Vendor-specific banner photos. Prefers the vendor's own uploaded banner
@@ -229,13 +224,13 @@ async function loadStallMenu(vendorId) {
     if (response.status === 200) {
       const data = await response.json();
       currentMenu = data.menu;
-      currentLayoutMode = data.settings?.layout_mode || "list";
       activeCategory = "All";
 
       document.getElementById("stallEyebrow").textContent = `Stall ${data.vendor.stall_number}`;
       document.getElementById("stallName").textContent = data.vendor.business_name;
       updateStallBanner(vendorId, data.vendor.banner_image);
       loadStallGrade(vendorId);
+      loadStallEcoBadge(vendorId);
 
       const ratingEl = document.getElementById("stallRating");
       ratingEl.textContent = data.vendor.review_count > 0
@@ -247,7 +242,6 @@ async function loadStallMenu(vendorId) {
       await setInitialLikeState(likeBtn, vendorId);
       likeBtn.onclick = () => toggleStallFavourite(likeBtn);
 
-      applyLayoutMode(currentLayoutMode);
       renderCategoryChips(currentMenu);
       renderMenu(currentMenu);
       document.getElementById("menuLoading").style.display = "none";

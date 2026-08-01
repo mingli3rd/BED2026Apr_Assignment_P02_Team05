@@ -28,9 +28,57 @@ function groupCartByVendor(cartItems) {
   return groups;
 }
 
+// Looks up a specific packaging option, verifying it belongs to this vendor
+// and is still enabled (the vendor may have changed/disabled it between
+// the customer loading the cart page and checking out).
+async function getEnabledPackagingOption(connection, optionId, vendorId) {
+  const request = connection.request();
+  request.input("id", sql.Int, optionId);
+  request.input("vendor_id", sql.Int, vendorId);
+  const result = await request.query(`
+    SELECT id, description, surcharge FROM PackagingOptions
+    WHERE id = @id AND vendor_id = @vendor_id AND is_enabled = 1
+  `);
+  return result.recordset[0] || null;
+}
+
+// Works out the packaging type/description/fee for one vendor's order group.
+//
+// The $0.30/item fee is the standard takeaway packaging charge and always
+// applies. Choosing an eco-friendly option ADDS that option's own per-item
+// surcharge on top — it doesn't replace the base fee, since the base fee
+// covers takeaway packaging generally and the eco surcharge is specifically
+// for choosing the sustainable option.
+function resolvePackaging(items, requestedOptionId, packagingOption) {
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const standardFee = itemCount * PACKAGING_FEE_PER_ITEM;
+
+  if (requestedOptionId && packagingOption) {
+    const ecoFeePerItem = PACKAGING_FEE_PER_ITEM + Number(packagingOption.surcharge);
+    return {
+      packaging_type: "eco",
+      packaging_description: packagingOption.description,
+      packaging_option_id: packagingOption.id,
+      packaging_fee: itemCount * ecoFeePerItem,
+    };
+  }
+
+  // Either the customer chose standard, or they asked for an eco option
+  // that's no longer available (deleted/disabled between page load and
+  // checkout) — fall back to standard rather than silently failing the
+  // whole order.
+  return {
+    packaging_type: "standard",
+    packaging_description: "Standard packaging",
+    packaging_option_id: null,
+    packaging_fee: standardFee,
+  };
+}
+
 // Creates one Order (+ OrderItems + OrderItemAddOns) per vendor group,
 // after a successful mock payment. patronId may be null for guest checkout.
-async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFail, guestEmail) {
+// vendorOptions is keyed by vendor_id: { [vendor_id]: { packaging_type, special_request } }
+async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFail, guestEmail, vendorOptions = {}) {
   const paymentResult = mockPaymentGateway(paymentMethod, forceFail);
 
   if (!paymentResult.success) {
@@ -48,14 +96,21 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
 
     for (const vendorId of Object.keys(groups)) {
       const items = groups[vendorId];
+      const options = vendorOptions[vendorId] || {};
 
       const itemsSubtotal = items.reduce((sum, item) => {
         const addOnsTotal = (item.add_ons || []).reduce((s, a) => s + Number(a.extra_price), 0);
         return sum + (Number(item.price) + addOnsTotal) * item.quantity;
       }, 0);
 
-      const packagingFee = items.reduce((sum, item) => sum + item.quantity, 0) * PACKAGING_FEE_PER_ITEM;
-      const orderTotal = itemsSubtotal + packagingFee;
+      const packagingOption = options.packaging_option_id
+        ? await getEnabledPackagingOption(connection, options.packaging_option_id, vendorId)
+        : null;
+      const packaging = resolvePackaging(items, options.packaging_option_id, packagingOption);
+      const orderTotal = itemsSubtotal + packaging.packaging_fee;
+
+      const specialRequest = (options.special_request || "").trim().slice(0, 500) || null;
+      const includeCutlery = options.include_cutlery !== false; // defaults to true (include cutlery) unless explicitly opted out
 
       // Look up the vendor's business name for the response summary
       const vendorRequest = connection.request();
@@ -71,12 +126,23 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
       orderRequest.input("total_amount", sql.Decimal(8, 2), orderTotal);
       orderRequest.input("payment_method", sql.VarChar, paymentMethod);
       orderRequest.input("payment_status", sql.VarChar, "success");
-      orderRequest.input("packaging_fee", sql.Decimal(6, 2), packagingFee);
+      orderRequest.input("packaging_fee", sql.Decimal(6, 2), packaging.packaging_fee);
+      orderRequest.input("packaging_type", sql.VarChar, packaging.packaging_type);
+      orderRequest.input("packaging_description", sql.VarChar, packaging.packaging_description);
+      orderRequest.input("packaging_option_id", sql.Int, packaging.packaging_option_id);
+      orderRequest.input("special_request", sql.VarChar, specialRequest);
+      orderRequest.input("include_cutlery", sql.Bit, includeCutlery ? 1 : 0);
       orderRequest.input("guest_email", sql.VarChar, guestEmail || null);
 
       const orderResult = await orderRequest.query(`
-        INSERT INTO Orders (vendor_id, patron_id, order_status, total_amount, payment_method, payment_status, packaging_fee, guest_email)
-        VALUES (@vendor_id, @patron_id, @order_status, @total_amount, @payment_method, @payment_status, @packaging_fee, @guest_email);
+        INSERT INTO Orders (
+          vendor_id, patron_id, order_status, total_amount, payment_method, payment_status,
+          packaging_fee, packaging_type, packaging_description, packaging_option_id, special_request, include_cutlery, guest_email
+        )
+        VALUES (
+          @vendor_id, @patron_id, @order_status, @total_amount, @payment_method, @payment_status,
+          @packaging_fee, @packaging_type, @packaging_description, @packaging_option_id, @special_request, @include_cutlery, @guest_email
+        );
         SELECT SCOPE_IDENTITY() AS id;
       `);
       const orderId = orderResult.recordset[0].id;
@@ -116,7 +182,11 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
         order_id: orderId,
         vendor_name: vendorName,
         subtotal: itemsSubtotal,
-        packaging_fee: packagingFee,
+        packaging_fee: packaging.packaging_fee,
+        packaging_type: packaging.packaging_type,
+        packaging_description: packaging.packaging_description,
+        special_request: specialRequest,
+        include_cutlery: includeCutlery,
         total: orderTotal,
       });
     }
@@ -156,6 +226,10 @@ async function getOrdersByIds(orderIds) {
         o.order_status,
         o.total_amount,
         o.payment_status,
+        o.packaging_type,
+        o.packaging_description,
+        o.special_request,
+        o.include_cutlery,
         o.created_at,
         v.business_name AS vendor_name,
         STUFF((
