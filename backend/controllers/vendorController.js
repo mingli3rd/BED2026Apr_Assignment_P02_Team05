@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const vendorModel = require("../models/vendorModel");
+const stallProfileSettingsModel = require("../models/stallProfileSettingsModel");
 
 // Register a new vendor account
 async function registerVendor(req, res) {
@@ -129,6 +130,66 @@ async function listVendorOrders(req, res) {
   }
 }
 
+async function getStallProfile(req, res) {
+  try {
+    const profile = await vendorModel.getVendorStallProfile(req.vendor.id);
+
+    if (!profile) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    const itemIds = profile.menu.map((item) => item.id);
+    const settings = await stallProfileSettingsModel.getVendorSettings(req.vendor.id, itemIds);
+    const menu = stallProfileSettingsModel.applySettingsToMenu(profile.menu, settings);
+
+    res.status(200).json({
+      vendor: profile.vendor,
+      menu,
+      settings,
+    });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error loading stall profile" });
+  }
+}
+
+async function updateStallProfileSettings(req, res) {
+  try {
+    const profile = await vendorModel.getVendorStallProfile(req.vendor.id);
+
+    if (!profile) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    const itemIds = profile.menu.map((item) => item.id);
+    const settings = await stallProfileSettingsModel.saveVendorSettings(req.vendor.id, req.body || {}, itemIds);
+    res.status(200).json({ message: "Stall profile settings updated", settings });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error updating stall profile settings" });
+  }
+}
+
+async function updateStallBanner(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Please upload a banner image." });
+    }
+
+    const bannerImage = `banners/${req.file.filename}`;
+    const updated = await vendorModel.updateVendorBanner(req.vendor.id, bannerImage);
+
+    if (!updated) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    res.status(200).json({ message: "Stall banner updated successfully", banner_image: bannerImage });
+  } catch (error) {
+    console.error("Controller error:", error);
+    res.status(500).json({ error: "Error updating stall banner" });
+  }
+}
+
 const ALLOWED_ORDER_STATUSES = ["pending", "preparing", "completed", "cancelled"];
 
 // Update the status of one of this vendor's orders (e.g. pending -> completed)
@@ -158,5 +219,8 @@ module.exports = {
   registerVendor,
   getDashboard,
   listVendorOrders,
+  getStallProfile,
+  updateStallProfileSettings,
+  updateStallBanner,
   updateOrderStatus,
 };

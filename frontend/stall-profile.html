@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stall Profile — SG Hawker Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-shell">
+    <aside class="dash-sidebar">
+      <a href="index.html" class="board-logo dash-logo">
+        <span class="board-logo-mark">SG</span>
+        <span class="board-logo-text">HAWKER HUB</span>
+      </a>
+
+      <nav class="dash-nav" aria-label="Dashboard navigation">
+        <a href="vendor-dashboard.html" class="dash-nav-link">
+          <span class="stall-no">01</span> Overview
+        </a>
+        <a href="menu.html" class="dash-nav-link">
+          <span class="stall-no">02</span> Menu
+        </a>
+        <a href="vendor-orders.html" class="dash-nav-link">
+          <span class="stall-no">03</span> Orders
+        </a>
+        <a href="rental-agreements.html" class="dash-nav-link">
+          <span class="stall-no">04</span> Rental Agreements
+        </a>
+        <a href="hygiene-history.html" class="dash-nav-link">
+          <span class="stall-no">05</span> Hygiene Grades
+        </a>
+        <a href="stall-profile.html" class="dash-nav-link is-active">
+          <span class="stall-no">06</span> Stall Profile
+        </a>
+        <a href="stall-performance.html" class="dash-nav-link">
+          <span class="stall-no">07</span> Performance
+        </a>
+      </nav>
+
+      <div class="dash-sidebar-footer">
+        <a href="index.html" class="dash-nav-link dash-back-link">← Back to Site</a>
+        <button id="logoutBtn" class="dash-logout-btn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="dash-main">
+      <div id="profileLoading" class="dashboard-loading">Loading your stall profile...</div>
+      <div id="profileError" class="form-message is-warning" style="display:none;"></div>
+
+      <div id="profileContent" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <p class="eyebrow">Stall Profile Studio</p>
+            <h1 class="dash-welcome">Preview as patron, edit as vendor.</h1>
+          </div>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2>Display Controls</h2>
+            <span class="dash-panel-note">Simulated customer view with vendor controls</span>
+          </div>
+
+          <div class="stall-profile-controls">
+            <div class="field">
+              <label for="layoutMode">Product Layout</label>
+              <select id="layoutMode">
+                <option value="list">List (Patron-style)</option>
+                <option value="grid">Grid</option>
+                <option value="spotlight">Spotlight Recommended</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Banner Image</label>
+              <input id="bannerImageInput" type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+              <div class="stall-profile-inline-actions">
+                <button id="chooseBannerBtn" type="button" class="btn btn-ghost">Choose Banner</button>
+                <button id="saveBannerBtn" type="button" class="btn btn-primary">Save Banner</button>
+                <span id="bannerFileName" class="mono muted">No file selected</span>
+              </div>
+              <p id="bannerMessage" class="form-message" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-panel stall-preview-panel">
+          <div class="stall-menu-section stall-preview-shell">
+            <img id="stallBannerImage" src="images/stall-banner.svg" alt="" class="stall-banner-img" />
+
+            <div class="stall-menu-header">
+              <div>
+                <p class="eyebrow" id="stallEyebrow">Stall</p>
+                <h1 class="section-title" id="stallName">—</h1>
+                <p class="mono muted" id="stallRating" style="margin: 6px 0 0;"></p>
+              </div>
+            </div>
+
+            <div class="menu-search-bar">
+              <input type="text" id="menuSearchInput" placeholder="Search this menu..." />
+            </div>
+
+            <div class="category-chips" id="categoryChips"></div>
+
+            <div id="profileMenuGrid" class="stall-item-grid"></div>
+
+            <div id="profileMenuEmpty" class="dash-empty-state" style="display:none;">
+              <p>No menu items found.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/stall-profile.js"></script>
+</body>
+</html>

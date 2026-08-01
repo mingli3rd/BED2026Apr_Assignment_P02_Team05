@@ -83,6 +83,7 @@ let currentVendorId = null;
 let currentMenu = [];
 let modalItem = null;
 let activeCategory = "All";
+let currentLayoutMode = "list";
 
 function getVendorIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -121,7 +122,7 @@ function renderCategoryChips(menu) {
 function applyFilters() {
   const searchTerm = document.getElementById("menuSearchInput").value.trim().toLowerCase();
 
-  let filtered = currentMenu;
+  let filtered = [...currentMenu];
 
   if (activeCategory !== "All") {
     filtered = filtered.filter((item) => item.category === activeCategory);
@@ -129,6 +130,15 @@ function applyFilters() {
 
   if (searchTerm) {
     filtered = filtered.filter((item) => item.name.toLowerCase().includes(searchTerm));
+  }
+
+  if (currentLayoutMode === "spotlight") {
+    filtered.sort((a, b) => {
+      const aWeight = (a.is_recommended ? 2 : 0) + (a.is_best_seller ? 1 : 0);
+      const bWeight = (b.is_recommended ? 2 : 0) + (b.is_best_seller ? 1 : 0);
+      if (aWeight !== bWeight) return bWeight - aWeight;
+      return 0;
+    });
   }
 
   renderMenu(filtered);
@@ -147,7 +157,7 @@ function renderMenu(menu) {
     return;
   }
 
-  grid.style.display = "flex";
+  grid.style.display = "";
   noResults.style.display = "none";
 
   grid.innerHTML = menu
@@ -159,6 +169,10 @@ function renderMenu(menu) {
             <h3>${item.name}</h3>
             <span class="mono">$${Number(item.price).toFixed(2)}</span>
             ${item.category ? `<span class="muted">${item.category}</span>` : ""}
+            <div class="stall-item-tags">
+              ${item.is_recommended ? '<span class="item-tag item-tag-recommended">Recommended</span>' : ""}
+              ${item.is_best_seller ? '<span class="item-tag item-tag-bestseller">Best Seller</span>' : ""}
+            </div>
           </div>
           <button class="btn btn-primary btn-small" data-item-id="${item.id}">+ Add</button>
         </div>
@@ -169,6 +183,17 @@ function renderMenu(menu) {
   grid.querySelectorAll("[data-item-id]").forEach((btn) => {
     btn.addEventListener("click", () => openAddOnModal(btn.dataset.itemId));
   });
+}
+
+function applyLayoutMode(layoutMode) {
+  const grid = document.getElementById("menuGrid");
+  grid.classList.remove("layout-grid", "layout-spotlight");
+
+  if (layoutMode === "grid") {
+    grid.classList.add("layout-grid");
+  } else if (layoutMode === "spotlight") {
+    grid.classList.add("layout-spotlight");
+  }
 }
 
 // Vendor-specific banner photos. Prefers the vendor's own uploaded banner
@@ -204,6 +229,7 @@ async function loadStallMenu(vendorId) {
     if (response.status === 200) {
       const data = await response.json();
       currentMenu = data.menu;
+      currentLayoutMode = data.settings?.layout_mode || "list";
       activeCategory = "All";
 
       document.getElementById("stallEyebrow").textContent = `Stall ${data.vendor.stall_number}`;
@@ -221,6 +247,7 @@ async function loadStallMenu(vendorId) {
       await setInitialLikeState(likeBtn, vendorId);
       likeBtn.onclick = () => toggleStallFavourite(likeBtn);
 
+      applyLayoutMode(currentLayoutMode);
       renderCategoryChips(currentMenu);
       renderMenu(currentMenu);
       document.getElementById("menuLoading").style.display = "none";

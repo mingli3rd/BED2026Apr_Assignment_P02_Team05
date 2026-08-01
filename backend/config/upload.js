@@ -42,7 +42,10 @@ const documentFileFilter = (req, file, cb) => {
 //      consistently), bakes the correct rotation into the actual pixels,
 //      strips the metadata, resizes, and re-encodes as a compressed JPEG
 //      before writing to disk.
-function createImageUploadMiddleware(fieldName, subfolder) {
+function createImageUploadMiddleware(fieldName, subfolder, options = {}) {
+  const resizeOptions = options.resizeOptions || { width: 800, withoutEnlargement: true };
+  const jpegQuality = options.jpegQuality || 80;
+
   const memoryUpload = multer({
     storage: multer.memoryStorage(),
     fileFilter: imageFileFilter,
@@ -65,8 +68,8 @@ function createImageUploadMiddleware(fieldName, subfolder) {
 
         await sharp(req.file.buffer)
           .rotate() // no arguments = auto-orient using the image's own EXIF data, then strip it
-          .resize({ width: 800, withoutEnlargement: true })
-          .jpeg({ quality: 80 })
+          .resize(resizeOptions)
+          .jpeg({ quality: jpegQuality })
           .toFile(destPath);
 
         // Controllers read req.file.filename to build the stored path —
@@ -115,7 +118,17 @@ function createDocumentUploadMiddleware(fieldName, subfolder) {
   ];
 }
 
-const uploadBannerImage = createImageUploadMiddleware("banner_image", "banners");
+const uploadBannerImage = createImageUploadMiddleware("banner_image", "banners", {
+  // Force a wide banner ratio and center-crop for consistent hero appearance.
+  resizeOptions: {
+    width: 1400,
+    height: 520,
+    fit: "cover",
+    position: "center",
+    withoutEnlargement: false,
+  },
+  jpegQuality: 82,
+});
 const uploadMenuItemImage = createImageUploadMiddleware("image", "menu-items");
 const uploadRentalAgreementDocument = createDocumentUploadMiddleware("agreement_document", "rental-agreements");
 
