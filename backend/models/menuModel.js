@@ -3,9 +3,8 @@ const dbConfig = require("../dbConfig");
 
 // Get all menu items for a vendor, with their assigned cuisines concatenated
 async function getMenuItemsByVendor(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
 
@@ -33,22 +32,13 @@ async function getMenuItemsByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get the cuisine IDs currently assigned to a menu item (used to pre-fill the edit form)
 async function getCuisineIdsForItem(menuItemId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("menu_item_id", sql.Int, menuItemId);
     const result = await request.query(`
@@ -58,23 +48,14 @@ async function getCuisineIdsForItem(menuItemId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Check whether a menu item with this name already exists for this vendor
 // (case-insensitive, trimmed). excludeId lets an update skip checking against itself.
 async function findDuplicateByName(vendorId, name, excludeId = null) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     request.input("name", sql.VarChar, name.trim());
@@ -92,22 +73,13 @@ async function findDuplicateByName(vendorId, name, excludeId = null) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Create a new menu item and link it to the given cuisines
 async function createMenuItem(vendorId, itemData) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const insertRequest = connection.request();
     insertRequest.input("vendor_id", sql.Int, vendorId);
     insertRequest.input("name", sql.VarChar, itemData.name.trim());
@@ -139,14 +111,6 @@ async function createMenuItem(vendorId, itemData) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
@@ -154,9 +118,8 @@ async function createMenuItem(vendorId, itemData) {
 // only updated if a new one was uploaded (itemData.image truthy) — editing
 // an item without choosing a new photo keeps the existing one intact.
 async function updateMenuItem(menuItemId, vendorId, itemData) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
 
     const updateRequest = connection.request();
     updateRequest.input("id", sql.Int, menuItemId);
@@ -198,14 +161,6 @@ async function updateMenuItem(menuItemId, vendorId, itemData) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
@@ -214,9 +169,8 @@ async function updateMenuItem(menuItemId, vendorId, itemData) {
 // hard DELETE would violate the FK constraint on OrderItems for any item
 // that has already been ordered, and would destroy historical order data.
 async function deleteMenuItem(menuItemId, vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, menuItemId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -229,35 +183,18 @@ async function deleteMenuItem(menuItemId, vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get all available cuisines (used to populate the checkbox list in the UI)
 async function getAllCuisines() {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const result = await connection.request().query(`SELECT id, name FROM Cuisines ORDER BY name ASC`);
     return result.recordset;
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 

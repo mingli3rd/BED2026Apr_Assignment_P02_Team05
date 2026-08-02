@@ -231,6 +231,7 @@ async function loadStallMenu(vendorId) {
       updateStallBanner(vendorId, data.vendor.banner_image);
       loadStallGrade(vendorId);
       loadStallEcoBadge(vendorId);
+      loadQueueSection(vendorId);
 
       const ratingEl = document.getElementById("stallRating");
       ratingEl.textContent = data.vendor.review_count > 0
@@ -466,3 +467,125 @@ complaintSubmitBtn.addEventListener("click", async () => {
     complaintSubmitBtn.textContent = "Submit Complaint";
   }
 });
+
+
+// =========================================================
+// DIGITAL QUEUE — Join Digital Queue (Customer)
+//
+// The stall page's only job here is letting a customer join and showing a
+// brief confirmation flash. Ongoing status (queue number, position ahead,
+// now serving, and the ability to leave) lives in the site-wide "My Queue"
+// nav widget (main.js) instead — that's a single source of truth, polled
+// from every page, rather than duplicating a second ticket UI here that
+// would need to be kept in sync with it.
+//
+// Works for both guests and logged-in patrons — a guest_identifier is
+// always sent, but the backend's attachPatronIfPresent middleware
+// overrides with the real patron_id if a valid patron cookie is present.
+// =========================================================
+
+const QUEUE_GUEST_KEY = "hawkerhub_queue_guest_id"; // must match main.js's key exactly
+
+function getQueueGuestId() {
+  let id = localStorage.getItem(QUEUE_GUEST_KEY);
+  if (!id) {
+    id = "guest-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem(QUEUE_GUEST_KEY, id);
+  }
+  return id;
+}
+
+const queueJoinPanel = document.getElementById("queueJoinPanel");
+const queueIntroText = document.getElementById("queueIntroText");
+const queueStatusBadge = document.getElementById("queueStatusBadge");
+const joinQueueBtn = document.getElementById("joinQueueBtn");
+const joinQueueFlash = document.getElementById("joinQueueFlash");
+
+joinQueueBtn.addEventListener("click", async () => {
+  joinQueueBtn.disabled = true;
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/queue/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // sends the patron cookie if logged in
+      body: JSON.stringify({ vendor_id: parseInt(currentVendorId), guest_identifier: getQueueGuestId() }),
+    });
+    const data = await response.json();
+
+    if (response.status === 201) {
+      joinQueueFlash.textContent = `You're #${data.entry.queue_number}! Check "My Queue" in the top nav to track your spot.`;
+      joinQueueFlash.style.display = "block";
+      setTimeout(() => {
+        joinQueueFlash.style.display = "none";
+      }, 5000);
+    } else {
+      alert(data.error || "Could not join the queue. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error joining queue:", error);
+    alert("Could not join the queue. Please check your connection and try again.");
+  } finally {
+    joinQueueBtn.disabled = false;
+  }
+});
+
+// Checks whether this stall has a digital queue set up and open, and shows
+// the current waiting count before the customer decides to join. Hides the
+// whole section if the stall doesn't offer a digital queue at all.
+//
+// isRetry guards against a transient failure permanently hiding the whole
+// feature: if the status check fails once (e.g. a request landing during a
+// burst of other queue activity right as someone gets called), we retry
+// once before giving up and showing a visible message — previously a
+// failed fetch just logged to console and left the panel silently hidden
+// with no way for the customer to know why "Join Queue" never appeared.
+async function loadQueueSection(vendorId, isRetry = false) {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/queue-status`);
+    if (!response.ok) {
+      throw new Error(`Unexpected status: ${response.status}`);
+    }
+    const status = await response.json();
+
+    if (!status.exists) {
+      queueJoinPanel.style.display = "none";
+      return;
+    }
+
+    queueJoinPanel.style.display = "block";
+    queueStatusBadge.style.display = "inline-block";
+
+    if (!status.is_open) {
+      queueStatusBadge.className = "queue-badge queue-badge-closed";
+      queueStatusBadge.textContent = "Closed";
+      queueIntroText.textContent = "This stall's digital queue is currently closed.";
+      joinQueueBtn.style.display = "none";
+    } else if (status.is_paused) {
+      // Paused means the vendor has temporarily stopped accepting new
+      // queue entries entirely — same as closed, joining isn't allowed
+      // until they resume.
+      queueStatusBadge.className = "queue-badge queue-badge-paused";
+      queueStatusBadge.textContent = "Paused";
+      joinQueueBtn.style.display = "none";
+      queueIntroText.textContent = "This stall's digital queue is currently paused and not accepting new joins right now. Please check back shortly.";
+    } else {
+      queueStatusBadge.className = "queue-badge queue-badge-open";
+      queueStatusBadge.textContent = "Open";
+      joinQueueBtn.style.display = "inline-flex";
+      const waitingCount = status.waiting_count || 0;
+      queueIntroText.textContent = waitingCount > 0
+        ? `${waitingCount} customer${waitingCount === 1 ? "" : "s"} currently waiting. Join now and track your spot from "My Queue" at the top of the page.`
+        : "No one's waiting right now — join and you'll likely be served straight away.";
+    }
+  } catch (error) {
+    console.error("Error loading queue section:", error);
+    if (!isRetry) {
+      setTimeout(() => loadQueueSection(vendorId, true), 1500);
+    } else {
+      queueJoinPanel.style.display = "block";
+      queueStatusBadge.style.display = "none";
+      joinQueueBtn.style.display = "none";
+      queueIntroText.textContent = "Could not check this stall's queue status right now. Please refresh the page to try again.";
+    }
+  }
+}

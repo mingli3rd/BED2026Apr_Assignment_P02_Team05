@@ -3,9 +3,8 @@ const dbConfig = require("../dbConfig");
 
 // Check if an email is already registered
 async function findUserByEmail(email) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = "SELECT id, email FROM Vendors WHERE email = @email";
     const request = connection.request();
     request.input("email", sql.VarChar, email);
@@ -19,22 +18,13 @@ async function findUserByEmail(email) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Create new vendor account
 async function createVendor(vendorData) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = `
       INSERT INTO Vendors (business_name, email, phone, password_hash, role, hawker_centre_id, stall_number, approval_status, banner_image)
       VALUES (@business_name, @email, @phone, @password_hash, @role, @hawker_centre_id, @stall_number, @approval_status, @banner_image);
@@ -58,22 +48,13 @@ async function createVendor(vendorData) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get vendor by ID (used to return the created record without the password hash)
 async function getVendorById(id) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = `
       SELECT id, business_name, email, phone, role, hawker_centre_id, stall_number, approval_status, banner_image, created_at
       FROM Vendors
@@ -91,22 +72,13 @@ async function getVendorById(id) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get full vendor record by email, including password_hash, for login authentication
 async function getVendorAuthByEmail(email) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = `
       SELECT id, business_name, email, password_hash, role, approval_status
       FROM Vendors
@@ -124,23 +96,14 @@ async function getVendorAuthByEmail(email) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get the authenticated vendor's stall profile details (including menu and
 // add-ons) without requiring approval_status = approved.
 async function getVendorStallProfile(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
 
     const vendorRequest = connection.request();
     vendorRequest.input("vendor_id", sql.Int, vendorId);
@@ -195,21 +158,12 @@ async function getVendorStallProfile(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 async function updateVendorBanner(vendorId, bannerImagePath) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     request.input("banner_image", sql.VarChar, bannerImagePath);
@@ -226,23 +180,14 @@ async function updateVendorBanner(vendorId, bannerImagePath) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get all orders for one vendor, newest first, with item summaries and
 // customer names resolved for the vendor orders page.
 async function getOrdersByVendor(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
 
@@ -279,14 +224,6 @@ async function getOrdersByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
@@ -294,9 +231,8 @@ async function getOrdersByVendor(vendorId) {
 // menu item count, average rating, today's revenue, and the 5 most recent
 // orders (with item names, customer name, packaging, and special request resolved).
 async function getVendorOverview(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
 
     // Pending order count
     const pendingRequest = connection.request();
@@ -375,14 +311,6 @@ async function getVendorOverview(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
@@ -390,9 +318,8 @@ async function getVendorOverview(vendorId) {
 // to this vendor (checked via WHERE ... AND vendor_id = @vendor_id), so a
 // vendor can never touch another stall's orders even by guessing an ID
 async function updateOrderStatus(orderId, vendorId, newStatus) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, orderId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -406,14 +333,6 @@ async function updateOrderStatus(orderId, vendorId, newStatus) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 

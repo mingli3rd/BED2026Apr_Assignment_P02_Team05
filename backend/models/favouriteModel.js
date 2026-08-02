@@ -4,9 +4,8 @@ const dbConfig = require("../dbConfig");
 // Add a stall to a patron's favourites (no-op if already favourited,
 // thanks to the UNIQUE constraint)
 async function addFavourite(patronId, vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -17,18 +16,13 @@ async function addFavourite(patronId, vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Remove a stall from a patron's favourites
 async function removeFavourite(patronId, vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -38,19 +32,14 @@ async function removeFavourite(patronId, vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get just the vendor IDs a patron has favourited (lightweight — used to
 // mark which stalls show a filled heart icon while browsing)
 async function getFavouriteVendorIds(patronId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     const result = await request.query(`
@@ -60,18 +49,13 @@ async function getFavouriteVendorIds(patronId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get a patron's favourite stalls with full details (for the Favourites page)
 async function getFavouritesByPatron(patronId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     const result = await request.query(`
@@ -97,10 +81,6 @@ async function getFavouritesByPatron(patronId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 

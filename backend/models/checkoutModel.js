@@ -75,11 +75,9 @@ function resolvePackaging(items, requestedOptionId, packagingOption) {
   };
 }
 
-// Inserts directly using the connection already open in createOrdersFromCart,
-// rather than calling notificationModel.createNotification() (which opens
-// and closes its own connection) — nesting a second connect/close cycle
-// inside this loop risks the mssql global pool getting closed mid-loop
-// when there are multiple vendor groups in one checkout.
+// Inserts directly using the connection already in use in createOrdersFromCart,
+// rather than calling notificationModel.createNotification() separately —
+// keeps everything for one checkout on one connection, one request at a time.
 async function pushOrderNotification(connection, vendorId, orderId, message) {
   const request = connection.request();
   request.input("vendor_id", sql.Int, vendorId);
@@ -107,9 +105,8 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
   const groups = groupCartByVendor(cartItems);
   const createdOrders = [];
 
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
 
     for (const vendorId of Object.keys(groups)) {
       const items = groups[vendorId];
@@ -219,10 +216,6 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
@@ -233,9 +226,8 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
 // worth flagging: this is NOT the same security guarantee as a logged-in
 // patron's order history, which is scoped to their own patron_id.
 async function getOrdersByIds(orderIds) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
 
     // Build a parameterised IN clause safely (no string concatenation of user input)
@@ -273,10 +265,6 @@ async function getOrdersByIds(orderIds) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
