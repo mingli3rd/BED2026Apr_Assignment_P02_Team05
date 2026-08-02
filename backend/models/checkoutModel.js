@@ -271,4 +271,6 @@ async function getOrdersByIds(orderIds) {
 module.exports = {
   createOrdersFromCart,
   getOrdersByIds,
+  groupCartByVendor,
+  resolvePackaging,
 };
