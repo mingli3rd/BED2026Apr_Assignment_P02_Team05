@@ -13,8 +13,9 @@ async function hasAgreementDocumentColumn(connection) {
 // expiry computed directly in SQL so the app doesn't need to do date math
 // on every row in JS.
 async function getAgreementsByVendor(vendorId) {
+  let connection;
   try {
-    const connection = await sql.connect(dbConfig);
+    connection = await sql.connect(dbConfig);
     const hasDocumentColumn = await hasAgreementDocumentColumn(connection);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
@@ -41,12 +42,15 @@ async function getAgreementsByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
+  } finally {
+    if (connection) await connection.close();
   }
 }
 
 async function getLatestAgreementByVendor(vendorId) {
+  let connection;
   try {
-    const connection = await sql.connect(dbConfig);
+    connection = await sql.connect(dbConfig);
     const hasDocumentColumn = await hasAgreementDocumentColumn(connection);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
@@ -73,12 +77,15 @@ async function getLatestAgreementByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
+  } finally {
+    if (connection) await connection.close();
   }
 }
 
 async function updateLatestAgreementDocument(vendorId, documentPath) {
+  let connection;
   try {
-    const connection = await sql.connect(dbConfig);
+    connection = await sql.connect(dbConfig);
     const hasDocumentColumn = await hasAgreementDocumentColumn(connection);
 
     if (!hasDocumentColumn) {
@@ -108,6 +115,8 @@ async function updateLatestAgreementDocument(vendorId, documentPath) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
+  } finally {
+    if (connection) await connection.close();
   }
 }
 
