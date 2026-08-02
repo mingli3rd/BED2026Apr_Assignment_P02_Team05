@@ -19,7 +19,7 @@ async function getGradeHistoryByVendor(vendorId) {
       FROM HygieneGrades hg
       JOIN Inspections i ON hg.inspection_id = i.id
       WHERE hg.vendor_id = @vendor_id
-      ORDER BY hg.issued_date DESC
+      ORDER BY hg.issued_date DESC, hg.id DESC
     `);
     return result.recordset;
   } catch (error) {
@@ -45,7 +45,7 @@ async function getCurrentGradeByVendor(vendorId) {
         hg.expiry_date AS valid_to
       FROM HygieneGrades hg
       WHERE hg.vendor_id = @vendor_id
-      ORDER BY hg.issued_date DESC
+      ORDER BY hg.issued_date DESC, hg.id DESC
     `);
     return result.recordset[0] || null;
   } catch (error) {

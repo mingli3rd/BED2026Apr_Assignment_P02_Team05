@@ -1,12 +1,5 @@
 const apiBaseUrl = "http://localhost:4000";
 
-function scoreToGrade(score) {
-  if (score >= 90) return "A";
-  if (score >= 75) return "B";
-  if (score >= 60) return "C";
-  return "D";
-}
-
 function gradeClass(grade) {
   return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "grade-d";
 }
@@ -57,20 +50,27 @@ async function loadInspections() {
               <td>${insp.business_name}</td>
               <td class="muted">Scheduled</td>
               <td class="mono muted">—</td>
-              <td>—</td>
+              <td class="mono muted">—</td>
               <td class="muted">—</td>
               <td class="mono muted">${displayDate}</td>
             </tr>
           `;
         }
 
-        const grade = scoreToGrade(insp.score);
+        // Grades are now issued automatically the moment a result is
+        // logged (see logInspectionResult on the backend), so a completed
+        // inspection should always have issued_grade set. The "—" fallback
+        // only covers old/pre-existing rows from before that change.
+        const gradeCell = insp.issued_grade
+          ? `<span class="grade-badge ${gradeClass(insp.issued_grade)}">${insp.issued_grade}</span>`
+          : `<span class="muted">—</span>`;
+
         return `
           <tr>
             <td>${insp.business_name}</td>
             <td class="muted">Completed</td>
             <td class="mono">${insp.score}</td>
-            <td><span class="grade-badge ${gradeClass(grade)}">${grade}</span></td>
+            <td>${gradeCell}</td>
             <td class="muted">${insp.remarks || "—"}</td>
             <td class="mono muted">${displayDate}</td>
           </tr>

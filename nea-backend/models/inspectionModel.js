@@ -1,10 +1,6 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
-// HCMP-30: Schedule Inspection — creates the row with status 'scheduled',
-// no score/remarks/conducted_at yet. The UQ_Inspections_Vendor_Date unique
-// index (vendor_id, scheduled_date) stops double-booking the same stall
-// on the same day at the database level.
 async function scheduleInspection(vendorId, officerId, scheduledDate) {
   let connection;
   try {
@@ -80,9 +76,6 @@ async function getInspectionById(inspectionId) {
   }
 }
 
-// HCMP-31: Conduct & Log Inspection — records score + remarks against a
-// previously scheduled inspection and flips its status to 'completed'.
-// No grade is issued here (that's HCMP-32, a separate later step).
 async function logInspectionResult(inspectionId, score, remarks) {
   let connection;
   try {
@@ -109,9 +102,6 @@ async function logInspectionResult(inspectionId, score, remarks) {
   }
 }
 
-// "My Inspections" history — every inspection this officer has touched,
-// both scheduled (not yet conducted) and completed, newest scheduled_date
-// first.
 async function getInspectionsByOfficer(officerId) {
   let connection;
   try {
@@ -120,9 +110,11 @@ async function getInspectionsByOfficer(officerId) {
     request.input("officer_id", sql.Int, officerId);
     const result = await request.query(`
       SELECT i.id, i.vendor_id, v.business_name, i.status,
-             i.scheduled_date, i.conducted_at, i.score, i.remarks
+             i.scheduled_date, i.conducted_at, i.score, i.remarks,
+             hg.grade AS issued_grade
       FROM Inspections i
       JOIN Vendors v ON i.vendor_id = v.id
+      LEFT JOIN HygieneGrades hg ON hg.inspection_id = i.id
       WHERE i.officer_id = @officer_id
       ORDER BY i.scheduled_date DESC
     `);
