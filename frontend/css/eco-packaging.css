@@ -1,10 +1,4 @@
-/* =========================================================
-   Eco-friendly packaging picker + special request box
-   Kept as its own stylesheet, same reasoning as notifications.css /
-   complaint-form.css: avoids fighting with selectors already in main.css.
-   ========================================================= */
 
-.packaging-picker {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
