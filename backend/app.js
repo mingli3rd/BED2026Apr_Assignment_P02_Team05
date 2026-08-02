@@ -103,6 +103,7 @@ app.get("/api/auth/session", authController.getSession);
 // ===================== PROTECTED VENDOR ROUTES =====================
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
+app.get("/api/vendor/orders", verifyVendorToken, vendorController.listVendorOrders);
 app.put("/api/vendor/orders/:id/status", verifyVendorToken, vendorController.updateOrderStatus);
 app.get("/api/vendor/stall-profile", verifyVendorToken, vendorController.getStallProfile);
 app.put("/api/vendor/stall-profile/settings", verifyVendorToken, vendorController.updateStallProfileSettings);
