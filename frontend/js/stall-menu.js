@@ -439,12 +439,6 @@ if (!initialVendorId) {
 
 updateFloatingCartBar();
 
-// =========================================================
-// COMPLAINT SUBMISSION ("Report an Issue")
-// Works for both guests and logged-in patrons — credentials: "include"
-// sends the patron cookie if present, but the backend accepts the
-// request either way since Complaints.patron_id is nullable.
-// =========================================================
 
 const reportIssueBtn = document.getElementById("reportIssueBtn");
 const complaintModal = document.getElementById("complaintModal");
@@ -513,23 +507,7 @@ complaintSubmitBtn.addEventListener("click", async () => {
   }
 });
 
-
-// =========================================================
-// DIGITAL QUEUE — Join Digital Queue (Customer)
-//
-// The stall page's only job here is letting a customer join and showing a
-// brief confirmation flash. Ongoing status (queue number, position ahead,
-// now serving, and the ability to leave) lives in the site-wide "My Queue"
-// nav widget (main.js) instead — that's a single source of truth, polled
-// from every page, rather than duplicating a second ticket UI here that
-// would need to be kept in sync with it.
-//
-// Works for both guests and logged-in patrons — a guest_identifier is
-// always sent, but the backend's attachPatronIfPresent middleware
-// overrides with the real patron_id if a valid patron cookie is present.
-// =========================================================
-
-const QUEUE_GUEST_KEY = "hawkerhub_queue_guest_id"; // must match main.js's key exactly
+const QUEUE_GUEST_KEY = "hawkerhub_queue_guest_id"; 
 
 function getQueueGuestId() {
   let id = localStorage.getItem(QUEUE_GUEST_KEY);
@@ -574,16 +552,7 @@ joinQueueBtn.addEventListener("click", async () => {
   }
 });
 
-// Checks whether this stall has a digital queue set up and open, and shows
-// the current waiting count before the customer decides to join. Hides the
-// whole section if the stall doesn't offer a digital queue at all.
-//
-// isRetry guards against a transient failure permanently hiding the whole
-// feature: if the status check fails once (e.g. a request landing during a
-// burst of other queue activity right as someone gets called), we retry
-// once before giving up and showing a visible message — previously a
-// failed fetch just logged to console and left the panel silently hidden
-// with no way for the customer to know why "Join Queue" never appeared.
+
 async function loadQueueSection(vendorId, isRetry = false) {
   try {
     const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/queue-status`);
