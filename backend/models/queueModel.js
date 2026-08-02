@@ -261,11 +261,11 @@ async function callNext(vendorId) {
       `);
 
     if (nextResult.recordset.length === 0) {
-      // Queue is now empty — still clear now_serving so the board doesn't
-      // show a stale number
-      await connection.request()
-        .input("vendor_id", sql.Int, vendorId)
-        .query(`UPDATE QueueStatus SET now_serving = NULL, updated_at = GETDATE() WHERE vendor_id = @vendor_id`);
+      // Queue is now empty. QueueStatus.now_serving is NOT NULL in the
+      // schema, so we can't clear it to represent "nobody" — instead we
+      // just leave it showing the last number that was actually called,
+      // same as how a real hawker stall's number display doesn't reset
+      // itself the moment the queue empties out.
       return { empty: true };
     }
 

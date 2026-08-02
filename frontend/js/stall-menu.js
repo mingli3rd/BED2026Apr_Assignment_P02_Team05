@@ -54,35 +54,80 @@ async function toggleStallFavourite(likeBtn) {
 }
 
 function gradeClass(grade) {
-  return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "";
+  return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "grade-none";
 }
 
-// Fetches this specific stall's current hygiene grade from the NEA
-// service. Degrades gracefully — if the NEA service is offline or the
-// stall has no grade yet, the badge just stays hidden.
+function formatGradeDate(dateStr) {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Fetches this stall's current hygiene grade directly from the main
+// backend's HygieneGrades/Inspections tables — the same data the NEA
+// service reads, just queried here instead, so this doesn't depend on
+// that separate service being up. Hides the whole widget if the stall
+// has no grade recorded at all.
 async function loadStallGrade(vendorId) {
+  const wrap = document.getElementById("hygieneGradeWrap");
   const badge = document.getElementById("stallGradeBadge");
   try {
-    const response = await fetch(`${neaApiBaseUrl}/api/nea/public/hygiene-grades`);
+    const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/hygiene-grade`);
     if (response.status !== 200) return;
 
-    const grades = await response.json();
-    const match = grades.find((g) => g.vendor_id === parseInt(vendorId));
+    const data = await response.json();
+    if (!data.has_grade) return; // no grade on record yet — leave the widget hidden
 
-    if (match && match.grade) {
-      badge.textContent = match.grade;
-      badge.className = `grade-badge ${gradeClass(match.grade)}`;
-      badge.style.display = "inline-block";
-    }
+    badge.textContent = data.grade;
+    badge.className = `grade-badge ${gradeClass(data.grade)}`;
+    wrap.style.display = "inline-block";
+
+    loadHygieneHistory(vendorId);
   } catch (error) {
-    console.error("Error loading hygiene grade (NEA service may be offline):", error);
+    console.error("Error loading hygiene grade:", error);
+  }
+}
+
+// Fetches the full grade history for the dropdown. Loaded alongside the
+// current grade (not lazily on click) since it's a lightweight query and
+// this keeps the dropdown feeling instant when opened.
+async function loadHygieneHistory(vendorId) {
+  const listEl = document.getElementById("hygieneHistoryList");
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/hygiene-history`);
+    if (response.status !== 200) {
+      listEl.innerHTML = '<p class="muted hygiene-history-empty">Could not load grade history.</p>';
+      return;
+    }
+
+    const history = await response.json();
+    if (!history || history.length === 0) {
+      listEl.innerHTML = '<p class="muted hygiene-history-empty">No past grades on record.</p>';
+      return;
+    }
+
+    listEl.innerHTML = history
+      .map(
+        (entry) => `
+          <div class="hygiene-history-item">
+            <div class="hygiene-history-item-top">
+              <span class="grade-badge ${gradeClass(entry.grade)}">${entry.grade}</span>
+              <span class="hygiene-history-dates">${formatGradeDate(entry.valid_from)} – ${formatGradeDate(entry.valid_to)}</span>
+            </div>
+            <div class="hygiene-history-score">Inspection score: ${entry.score}/100</div>
+            ${entry.remarks ? `<div class="hygiene-history-remarks">"${entry.remarks}"</div>` : ""}
+          </div>
+        `
+      )
+      .join("");
+  } catch (error) {
+    console.error("Error loading hygiene grade history:", error);
+    listEl.innerHTML = '<p class="muted hygiene-history-empty">Could not load grade history.</p>';
   }
 }
 
 // Fetches this stall's currently-enabled eco packaging options and shows
-// a badge if there's at least one. Uses apiBaseUrl (main backend), not
-// neaApiBaseUrl — packaging lives in the main database, unlike hygiene
-// grades which live in the separate NEA service.
+// a badge if there's at least one. Uses apiBaseUrl (main backend) — same
+// as hygiene grades now, both read directly from the main database.
 async function loadStallEcoBadge(vendorId) {
   const badge = document.getElementById("stallEcoBadge");
   try {

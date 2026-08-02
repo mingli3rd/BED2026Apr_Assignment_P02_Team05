@@ -65,6 +65,9 @@ const { validatePackagingOption } = require("./middlewares/packagingValidation")
 const queueController = require("./controllers/queueController");
 const { validateQueueJoin } = require("./middlewares/queueValidation");
 
+// --- Hygiene Grades (public stall-page badge + history) ---
+const hygieneGradeController = require("./controllers/hygieneGradeController");
+
 
 // Create Express app
 const app = express();
@@ -198,6 +201,13 @@ app.post("/api/vendor/queue/open", verifyVendorToken, queueController.setOpen);
 // to poll for "your turn is near" alerts pushed by queueModel.callNext)
 app.get("/api/notifications/mine", notificationController.getMyCustomerNotifications);
 app.put("/api/notifications/mine/:id/read", notificationController.markCustomerNotificationAsRead);
+
+// ===================== HYGIENE GRADES (public — stall page badge + history) =====================
+// Reads directly from the main database's HygieneGrades/Inspections tables,
+// so the stall page's badge no longer depends on the separate NEA service
+// being up — it's the same data either way, just read from here instead.
+app.get("/api/stalls/:vendorId/hygiene-grade", hygieneGradeController.getPublicCurrentGrade);
+app.get("/api/stalls/:vendorId/hygiene-history", hygieneGradeController.getPublicGradeHistory);
 
 // Start server
 app.listen(port, () => {
