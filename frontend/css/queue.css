@@ -1,8 +1,4 @@
-/* =========================================================
-   Digital Queue — vendor management page
-   Reuses the site's real design tokens (--teal-shadow, --mustard,
-   --font-mono, --font-display) rather than guessing at a palette.
-   ========================================================= */
+
 
 .queue-now-serving-board {
   background-color: var(--teal-shadow);
