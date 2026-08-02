@@ -44,7 +44,6 @@ async function listUpcomingInspections(req, res) {
   }
 }
 
-// PUT /api/nea/inspections/:id/result — HCMP-31 Conduct & Log Inspection
 async function logInspectionResult(req, res) {
   try {
     const { id } = req.params;
@@ -66,7 +65,16 @@ async function logInspectionResult(req, res) {
     }
 
     const updated = await inspectionModel.logInspectionResult(id, score, remarks);
-    res.status(200).json({ message: "Inspection result logged successfully.", inspection: updated });
+
+    // Auto-issue the grade immediately — no manual step, no override.
+    const grade = hygieneGradeModel.suggestGradeForScore(updated.score);
+    const issuedGrade = await hygieneGradeModel.issueGrade(updated.vendor_id, updated.id, grade);
+
+    res.status(200).json({
+      message: "Inspection result logged and hygiene grade issued successfully.",
+      inspection: updated,
+      grade: issuedGrade,
+    });
   } catch (error) {
     console.error("Controller error:", error);
     res.status(500).json({ error: "Error logging inspection result" });

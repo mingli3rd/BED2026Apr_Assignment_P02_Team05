@@ -48,6 +48,8 @@ app.post("/api/nea/inspections", verifyOfficerToken, inspectionController.schedu
 app.get("/api/nea/inspections/upcoming", verifyOfficerToken, inspectionController.listUpcomingInspections);
 
 // ===================== HCMP-31: CONDUCT & LOG INSPECTION =====================
+// HCMP-32 (Issue Hygiene Grade) is automatic here — see logInspectionResult
+// in inspectionController.js. No separate manual "issue grade" route.
 app.put("/api/nea/inspections/:id/result", verifyOfficerToken, inspectionController.logInspectionResult);
 
 // ===================== MY INSPECTIONS (history) =====================

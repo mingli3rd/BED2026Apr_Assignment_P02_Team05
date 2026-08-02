@@ -1,11 +1,14 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
+function suggestGradeForScore(score) {
+  if (score >= 90) return "A";
+  if (score >= 75) return "B";
+  if (score >= 60) return "C";
+  return "D";
+}
+
 // Get a vendor's full hygiene grade history, newest first.
-// Matches the teammate's schema (issued_date / expiry_date columns,
-// Inspections.conducted_at for the inspection date) — aliased back to
-// valid_from / valid_to / inspection_date in the SELECT so nothing
-// downstream (API response shape, front-end code) needs to change.
 async function getGradeHistoryByVendor(vendorId) {
   let connection;
   try {
@@ -24,7 +27,7 @@ async function getGradeHistoryByVendor(vendorId) {
       FROM HygieneGrades hg
       JOIN Inspections i ON hg.inspection_id = i.id
       WHERE hg.vendor_id = @vendor_id
-      ORDER BY hg.issued_date DESC
+      ORDER BY hg.issued_date DESC, hg.id DESC
     `);
     return result.recordset;
   } catch (error) {
@@ -53,10 +56,10 @@ async function getCurrentGradesForAllVendors() {
         hg.expiry_date AS valid_to
       FROM Vendors v
       OUTER APPLY (
-        SELECT TOP 1 grade, issued_date, expiry_date
+        SELECT TOP 1 id, grade, issued_date, expiry_date
         FROM HygieneGrades
         WHERE vendor_id = v.id
-        ORDER BY issued_date DESC
+        ORDER BY issued_date DESC, id DESC
       ) hg
       WHERE v.approval_status = 'approved'
       ORDER BY v.business_name
@@ -72,7 +75,58 @@ async function getCurrentGradesForAllVendors() {
   }
 }
 
+// Check whether a grade has already been issued for a specific inspection
+// (an inspection should only ever get one grade).
+async function getGradeByInspectionId(inspectionId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("inspection_id", sql.Int, inspectionId);
+    const result = await request.query(`
+      SELECT * FROM HygieneGrades WHERE inspection_id = @inspection_id
+    `);
+    return result.recordset[0] || null;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
+    }
+  }
+}
+
+async function issueGrade(vendorId, inspectionId, grade, validityMonths = 12) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("vendor_id", sql.Int, vendorId);
+    request.input("inspection_id", sql.Int, inspectionId);
+    request.input("grade", sql.Char(1), grade);
+    request.input("validity_months", sql.Int, validityMonths);
+
+    const result = await request.query(`
+      INSERT INTO HygieneGrades (vendor_id, inspection_id, grade, issued_date, expiry_date)
+      OUTPUT INSERTED.*
+      VALUES (@vendor_id, @inspection_id, @grade, GETDATE(), DATEADD(MONTH, @validity_months, GETDATE()))
+    `);
+    return result.recordset[0];
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
+    }
+  }
+}
+
 module.exports = {
+  suggestGradeForScore,
   getGradeHistoryByVendor,
   getCurrentGradesForAllVendors,
+  getGradeByInspectionId,
+  issueGrade,
 };
