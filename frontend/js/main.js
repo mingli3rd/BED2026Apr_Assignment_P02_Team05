@@ -79,29 +79,16 @@ function getCurrentPageName() {
 
 async function getCurrentSessionRole() {
   try {
-    const vendorRes = await fetch(`${navApiBaseUrl}/api/auth/me`, {
+    const response = await fetch(`${navApiBaseUrl}/api/auth/session`, {
       method: "GET",
       credentials: "include",
     });
-    if (vendorRes.status === 200) {
-      const data = await vendorRes.json();
-      return { role: "vendor", user: data.vendor };
+    const data = await response.json();
+    if (data.role === "vendor" || data.role === "patron") {
+      return { role: data.role, user: data.user };
     }
   } catch (error) {
-    console.error("Vendor session check failed:", error);
-  }
-
-  try {
-    const patronRes = await fetch(`${navApiBaseUrl}/api/auth/me/patron`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (patronRes.status === 200) {
-      const data = await patronRes.json();
-      return { role: "patron", user: data.patron };
-    }
-  } catch (error) {
-    console.error("Patron session check failed:", error);
+    console.error("Session check failed:", error);
   }
 
   return { role: "guest", user: null };

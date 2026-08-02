@@ -19,11 +19,12 @@ const CART_STORAGE_KEY = "hawkerhub_cart";
 // dashboard instead of letting them browse/order.
 async function redirectIfVendor() {
   try {
-    const response = await fetch("http://localhost:3000/api/auth/me", {
+    const response = await fetch("http://localhost:3000/api/auth/session", {
       method: "GET",
       credentials: "include",
     });
-    if (response.status === 200) {
+    const data = await response.json();
+    if (data.role === "vendor") {
       window.location.href = "vendor-dashboard.html";
     }
   } catch (error) {

@@ -101,6 +101,7 @@ app.post("/api/auth/login", validateLogin, authController.login);
 app.post("/api/auth/logout", authController.logout);
 app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor);
 app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron);
+app.get("/api/auth/session", authController.getSession);
 
 // ===================== PROTECTED VENDOR ROUTES =====================
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
