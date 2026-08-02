@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/complaint-form.css" />
   <link rel="stylesheet" href="css/eco-packaging.css" />
   <link rel="stylesheet" href="css/queue.css" />
+  <link rel="stylesheet" href="css/hygiene-grade.css" />
 </head>
 <body>
 
@@ -64,11 +65,29 @@
           <p class="eyebrow" id="stallEyebrow">Loading stall...</p>
           <h1 class="section-title">
             <span id="stallName">—</span>
-            <span id="stallGradeBadge" class="grade-badge" style="display:none; vertical-align: middle; margin-left: 10px;"></span>
             <span id="stallEcoBadge" class="eco-badge" style="display:none;">🌱 Eco packaging available</span>
             <button type="button" id="stallLikeBtn" class="like-btn like-btn-inline" data-vendor-id="" aria-label="Add to favourites">♥</button>
           </h1>
-          <p class="mono muted" id="stallRating" style="margin: 6px 0 0;"></p>
+
+          <!-- Hygiene grade: reuses the site's .auth-dropdown component
+               (same one behind Sign Up / Log In) so open/close works via
+               main.js's existing generic handler — no extra JS needed
+               for the toggle itself. -->
+          <div class="auth-dropdown hygiene-grade-dropdown" id="hygieneGradeWrap" style="display:none;">
+            <button type="button" class="auth-dropdown-toggle hygiene-grade-toggle" id="hygieneGradeToggle">
+              <span class="grade-badge" id="stallGradeBadge">–</span>
+              <span>Hygiene Grade</span>
+              <span class="chevron">▾</span>
+            </button>
+            <div class="auth-dropdown-menu hygiene-grade-menu" id="hygieneGradeMenu">
+              <div class="hygiene-grade-menu-header">Grade History</div>
+              <div id="hygieneHistoryList" class="hygiene-history-list">
+                <p class="muted hygiene-history-empty">Loading...</p>
+              </div>
+            </div>
+          </div>
+
+          <p class="mono muted" id="stallRating" style="margin: 10px 0 0;"></p>
           <button type="button" id="reportIssueBtn" class="btn btn-ghost btn-small report-issue-btn">⚑ Report an Issue</button>
         </div>
       </div>

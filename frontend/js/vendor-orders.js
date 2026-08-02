@@ -64,7 +64,7 @@ function renderOrdersTable(orders) {
             <div>${order.payment_status}</div>
             <div class="muted" style="font-size:12px;">${order.payment_method || ""}</div>
           </td>
-          <td>${order.packaging_type === "eco" ? "🌱 " : ""}${order.packaging_description || "Standard packaging"}</td>
+          <td>${order.packaging_type === "eco" ? " " : ""}${order.packaging_description || "Standard packaging"}</td>
           <td>${order.include_cutlery ? "✅ Yes" : "🚫 No"}</td>
           <td class="muted">${order.special_request || "—"}</td>
           <td class="mono muted">${order.time}</td>

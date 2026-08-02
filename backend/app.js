@@ -67,6 +67,9 @@ const { validatePackagingOption } = require("./middlewares/packagingValidation")
 const queueController = require("./controllers/queueController");
 const { validateQueueJoin } = require("./middlewares/queueValidation");
 
+// --- Hygiene Grades (public stall-page badge + history) ---
+const hygieneGradeController = require("./controllers/hygieneGradeController");
+
 
 // Create Express app
 const app = express();
@@ -103,10 +106,12 @@ app.post("/api/auth/login", validateLogin, authController.login);
 app.post("/api/auth/logout", authController.logout);
 app.get("/api/auth/me", verifyVendorToken, authController.getCurrentVendor);
 app.get("/api/auth/me/patron", verifyPatronToken, authController.getCurrentPatron);
+app.get("/api/auth/session", authController.getSession);
 
 // ===================== PROTECTED VENDOR ROUTES =====================
 app.get("/api/vendor/dashboard", verifyVendorToken, vendorController.getDashboard);
 app.get("/api/vendor/performance", verifyVendorToken, performanceController.getStallPerformance);
+app.get("/api/vendor/orders", verifyVendorToken, vendorController.listVendorOrders);
 app.put("/api/vendor/orders/:id/status", verifyVendorToken, vendorController.updateOrderStatus);
 app.get("/api/vendor/stall-profile", verifyVendorToken, vendorController.getStallProfile);
 app.put("/api/vendor/stall-profile/settings", verifyVendorToken, vendorController.updateStallProfileSettings);
@@ -201,6 +206,13 @@ app.post("/api/vendor/queue/open", verifyVendorToken, queueController.setOpen);
 // to poll for "your turn is near" alerts pushed by queueModel.callNext)
 app.get("/api/notifications/mine", notificationController.getMyCustomerNotifications);
 app.put("/api/notifications/mine/:id/read", notificationController.markCustomerNotificationAsRead);
+
+// ===================== HYGIENE GRADES (public — stall page badge + history) =====================
+// Reads directly from the main database's HygieneGrades/Inspections tables,
+// so the stall page's badge no longer depends on the separate NEA service
+// being up — it's the same data either way, just read from here instead.
+app.get("/api/stalls/:vendorId/hygiene-grade", hygieneGradeController.getPublicCurrentGrade);
+app.get("/api/stalls/:vendorId/hygiene-history", hygieneGradeController.getPublicGradeHistory);
 
 // Start server
 app.listen(port, () => {

@@ -146,9 +146,36 @@ function getCurrentPatron(req, res) {
   });
 }
 
+// Soft session check: reports whatever role (if any) the cookie belongs to,
+// always with a 200. Unlike /api/auth/me and /api/auth/me/patron, this never
+// 401s/403s — it's for callers that just want to know "vendor, patron, or
+// guest?" (e.g. nav rendering, redirecting a vendor away from ordering pages)
+// rather than gating access to a protected resource.
+function getSession(req, res) {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(200).json({ role: "guest", user: null });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== "vendor" && decoded.role !== "patron") {
+      return res.status(200).json({ role: "guest", user: null });
+    }
+    return res.status(200).json({
+      role: decoded.role,
+      user: { id: decoded.id, email: decoded.email, role: decoded.role },
+    });
+  } catch (error) {
+    return res.status(200).json({ role: "guest", user: null });
+  }
+}
+
 module.exports = {
   login,
   logout,
   getCurrentVendor,
   getCurrentPatron,
+  getSession,
 };

@@ -28,6 +28,33 @@ async function getGradeHistoryByVendor(vendorId) {
   }
 }
 
+// Get just a vendor's single most recent hygiene grade — used by the public
+// stall page badge, so it doesn't need the full history, and doesn't
+// depend on the separate NEA service being up (this reads the same
+// HygieneGrades/Inspections tables directly, since they live in the same
+// database as the rest of the app).
+async function getCurrentGradeByVendor(vendorId) {
+  try {
+    const connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("vendor_id", sql.Int, vendorId);
+    const result = await request.query(`
+      SELECT TOP 1
+        hg.grade,
+        hg.issued_date AS valid_from,
+        hg.expiry_date AS valid_to
+      FROM HygieneGrades hg
+      WHERE hg.vendor_id = @vendor_id
+      ORDER BY hg.issued_date DESC
+    `);
+    return result.recordset[0] || null;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getGradeHistoryByVendor,
+  getCurrentGradeByVendor,
 };

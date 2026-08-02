@@ -54,35 +54,80 @@ async function toggleStallFavourite(likeBtn) {
 }
 
 function gradeClass(grade) {
-  return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "";
+  return { A: "grade-a", B: "grade-b", C: "grade-c", D: "grade-d" }[grade] || "grade-none";
 }
 
-// Fetches this specific stall's current hygiene grade from the NEA
-// service. Degrades gracefully — if the NEA service is offline or the
-// stall has no grade yet, the badge just stays hidden.
+function formatGradeDate(dateStr) {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Fetches this stall's current hygiene grade directly from the main
+// backend's HygieneGrades/Inspections tables — the same data the NEA
+// service reads, just queried here instead, so this doesn't depend on
+// that separate service being up. Hides the whole widget if the stall
+// has no grade recorded at all.
 async function loadStallGrade(vendorId) {
+  const wrap = document.getElementById("hygieneGradeWrap");
   const badge = document.getElementById("stallGradeBadge");
   try {
-    const response = await fetch(`${neaApiBaseUrl}/api/nea/public/hygiene-grades`);
+    const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/hygiene-grade`);
     if (response.status !== 200) return;
 
-    const grades = await response.json();
-    const match = grades.find((g) => g.vendor_id === parseInt(vendorId));
+    const data = await response.json();
+    if (!data.has_grade) return; // no grade on record yet — leave the widget hidden
 
-    if (match && match.grade) {
-      badge.textContent = match.grade;
-      badge.className = `grade-badge ${gradeClass(match.grade)}`;
-      badge.style.display = "inline-block";
-    }
+    badge.textContent = data.grade;
+    badge.className = `grade-badge ${gradeClass(data.grade)}`;
+    wrap.style.display = "inline-block";
+
+    loadHygieneHistory(vendorId);
   } catch (error) {
-    console.error("Error loading hygiene grade (NEA service may be offline):", error);
+    console.error("Error loading hygiene grade:", error);
+  }
+}
+
+// Fetches the full grade history for the dropdown. Loaded alongside the
+// current grade (not lazily on click) since it's a lightweight query and
+// this keeps the dropdown feeling instant when opened.
+async function loadHygieneHistory(vendorId) {
+  const listEl = document.getElementById("hygieneHistoryList");
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/hygiene-history`);
+    if (response.status !== 200) {
+      listEl.innerHTML = '<p class="muted hygiene-history-empty">Could not load grade history.</p>';
+      return;
+    }
+
+    const history = await response.json();
+    if (!history || history.length === 0) {
+      listEl.innerHTML = '<p class="muted hygiene-history-empty">No past grades on record.</p>';
+      return;
+    }
+
+    listEl.innerHTML = history
+      .map(
+        (entry) => `
+          <div class="hygiene-history-item">
+            <div class="hygiene-history-item-top">
+              <span class="grade-badge ${gradeClass(entry.grade)}">${entry.grade}</span>
+              <span class="hygiene-history-dates">${formatGradeDate(entry.valid_from)} – ${formatGradeDate(entry.valid_to)}</span>
+            </div>
+            <div class="hygiene-history-score">Inspection score: ${entry.score}/100</div>
+            ${entry.remarks ? `<div class="hygiene-history-remarks">"${entry.remarks}"</div>` : ""}
+          </div>
+        `
+      )
+      .join("");
+  } catch (error) {
+    console.error("Error loading hygiene grade history:", error);
+    listEl.innerHTML = '<p class="muted hygiene-history-empty">Could not load grade history.</p>';
   }
 }
 
 // Fetches this stall's currently-enabled eco packaging options and shows
-// a badge if there's at least one. Uses apiBaseUrl (main backend), not
-// neaApiBaseUrl — packaging lives in the main database, unlike hygiene
-// grades which live in the separate NEA service.
+// a badge if there's at least one. Uses apiBaseUrl (main backend) — same
+// as hygiene grades now, both read directly from the main database.
 async function loadStallEcoBadge(vendorId) {
   const badge = document.getElementById("stallEcoBadge");
   try {
@@ -394,12 +439,6 @@ if (!initialVendorId) {
 
 updateFloatingCartBar();
 
-// =========================================================
-// COMPLAINT SUBMISSION ("Report an Issue")
-// Works for both guests and logged-in patrons — credentials: "include"
-// sends the patron cookie if present, but the backend accepts the
-// request either way since Complaints.patron_id is nullable.
-// =========================================================
 
 const reportIssueBtn = document.getElementById("reportIssueBtn");
 const complaintModal = document.getElementById("complaintModal");
@@ -468,23 +507,7 @@ complaintSubmitBtn.addEventListener("click", async () => {
   }
 });
 
-
-// =========================================================
-// DIGITAL QUEUE — Join Digital Queue (Customer)
-//
-// The stall page's only job here is letting a customer join and showing a
-// brief confirmation flash. Ongoing status (queue number, position ahead,
-// now serving, and the ability to leave) lives in the site-wide "My Queue"
-// nav widget (main.js) instead — that's a single source of truth, polled
-// from every page, rather than duplicating a second ticket UI here that
-// would need to be kept in sync with it.
-//
-// Works for both guests and logged-in patrons — a guest_identifier is
-// always sent, but the backend's attachPatronIfPresent middleware
-// overrides with the real patron_id if a valid patron cookie is present.
-// =========================================================
-
-const QUEUE_GUEST_KEY = "hawkerhub_queue_guest_id"; // must match main.js's key exactly
+const QUEUE_GUEST_KEY = "hawkerhub_queue_guest_id"; 
 
 function getQueueGuestId() {
   let id = localStorage.getItem(QUEUE_GUEST_KEY);
@@ -529,16 +552,7 @@ joinQueueBtn.addEventListener("click", async () => {
   }
 });
 
-// Checks whether this stall has a digital queue set up and open, and shows
-// the current waiting count before the customer decides to join. Hides the
-// whole section if the stall doesn't offer a digital queue at all.
-//
-// isRetry guards against a transient failure permanently hiding the whole
-// feature: if the status check fails once (e.g. a request landing during a
-// burst of other queue activity right as someone gets called), we retry
-// once before giving up and showing a visible message — previously a
-// failed fetch just logged to console and left the panel silently hidden
-// with no way for the customer to know why "Join Queue" never appeared.
+
 async function loadQueueSection(vendorId, isRetry = false) {
   try {
     const response = await fetch(`${apiBaseUrl}/api/stalls/${vendorId}/queue-status`);

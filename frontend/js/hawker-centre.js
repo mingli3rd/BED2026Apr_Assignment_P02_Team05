@@ -36,10 +36,10 @@ function applyGradeFilter() {
     ? allStalls.filter((stall) => stall.grade === activeGradeFilter)
     : allStalls;
 
-  if (activeRatingSort) {
-    filtered = [...filtered].sort((a, b) =>
-      activeRatingSort === "desc" ? b.avg_rating - a.avg_rating : a.avg_rating - b.avg_rating
-    );
+  if (activeRatingSort === "asc") {
+    filtered = [...filtered].sort((a, b) => Number(a.avg_rating) - Number(b.avg_rating));
+  } else if (activeRatingSort === "desc") {
+    filtered = [...filtered].sort((a, b) => Number(b.avg_rating) - Number(a.avg_rating));
   }
 
   renderStallCards(filtered);
@@ -62,7 +62,7 @@ createFilterDropdown(
 );
 
 createFilterDropdown(
-  "ratingSortFilter",
+  "ratingSort",
   [
     { value: "", label: "Sort by Rating" },
     { value: "desc", label: "Rating: High to Low" },
@@ -92,8 +92,12 @@ function renderStallCards(stalls) {
   emptyState.style.display = "none";
 
   grid.innerHTML = stalls
-    .map(
-      (stall) => `
+    .map((stall) => {
+      const ratingText = stall.review_count > 0
+        ? `★ ${Number(stall.avg_rating).toFixed(1)} (${stall.review_count})`
+        : "No reviews yet";
+
+      return `
         <a href="stall-menu.html?vendor_id=${stall.id}" class="directory-card">
           <img src="${stall.banner_image ? "/uploads/" + stall.banner_image : "images/stall-banner.svg"}" alt="" class="directory-card-img" />
           <div class="directory-card-title-row">
@@ -101,11 +105,11 @@ function renderStallCards(stalls) {
             ${stall.grade ? `<span class="grade-badge ${gradeClass(stall.grade)}">${stall.grade}</span>` : ""}
           </div>
           <h3>${stall.business_name}</h3>
-          <p class="mono muted">${stall.review_count > 0 ? `★ ${Number(stall.avg_rating).toFixed(1)} (${stall.review_count} review${stall.review_count === 1 ? "" : "s"})` : "No reviews yet"}</p>
+          <p class="mono muted" style="font-size:12.5px; margin: 4px 0 0;">${ratingText}</p>
           <span class="directory-card-link">Order Now →</span>
         </a>
-      `
-    )
+      `;
+    })
     .join("");
 }
 

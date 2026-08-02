@@ -46,14 +46,6 @@ if (ticketNumber && !window.matchMedia("(prefers-reduced-motion: reduce)").match
   }, 4000);
 }
 
-// =========================================================
-// SITE-WIDE SESSION-AWARE NAVIGATION
-//
-// A browser session is authenticated as exactly ONE role at a time
-// (single JWT cookie) — you can never be "logged in as both a vendor
-// and a patron" simultaneously. So the account area of the nav should
-// reflect exactly one of three states: guest, vendor, or patron.
-// =========================================================
 
 const navApiBaseUrl = "http://localhost:3000";
 
@@ -79,29 +71,16 @@ function getCurrentPageName() {
 
 async function getCurrentSessionRole() {
   try {
-    const vendorRes = await fetch(`${navApiBaseUrl}/api/auth/me`, {
+    const response = await fetch(`${navApiBaseUrl}/api/auth/session`, {
       method: "GET",
       credentials: "include",
     });
-    if (vendorRes.status === 200) {
-      const data = await vendorRes.json();
-      return { role: "vendor", user: data.vendor };
+    const data = await response.json();
+    if (data.role === "vendor" || data.role === "patron") {
+      return { role: data.role, user: data.user };
     }
   } catch (error) {
-    console.error("Vendor session check failed:", error);
-  }
-
-  try {
-    const patronRes = await fetch(`${navApiBaseUrl}/api/auth/me/patron`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (patronRes.status === 200) {
-      const data = await patronRes.json();
-      return { role: "patron", user: data.patron };
-    }
-  } catch (error) {
-    console.error("Patron session check failed:", error);
+    console.error("Session check failed:", error);
   }
 
   return { role: "guest", user: null };
@@ -164,10 +143,7 @@ function updateCtaBandForPatron() {
   `;
 }
 
-// If this guest has any orders tracked in sessionStorage (placed earlier
-// in this same tab), show a "Track Orders" link in the nav so they can get
-// back to guest-orders.html from anywhere on the site — not just the
-// checkout success screen.
+
 function addGuestTrackOrdersLink() {
   if (!boardAuth || document.getElementById("guestTrackOrdersLink")) return;
 
@@ -196,16 +172,6 @@ function addGuestTrackOrdersLink() {
   }
 }
 
-// =========================================================
-// SITE-WIDE "MY QUEUE" NAV WIDGET
-//
-// Shows every digital queue ticket this browser/patron currently holds,
-// across ALL stalls, from anywhere on the site — not just the stall page
-// itself. Works for guests (identified by the same guest_identifier
-// stall-menu.js generates/stores) and logged-in patrons (identified by
-// their patron id from the session check above). Never shown for vendors,
-// since they run stalls rather than queue at them.
-// =========================================================
 
 const NAV_QUEUE_GUEST_STORAGE_KEY = "hawkerhub_queue_guest_id"; // must match stall-menu.js's key exactly — kept as a differently-named constant here since classic <script> files share one global scope, and stall-menu.js already declares its own QUEUE_GUEST_KEY with this same value
 let queueNavPollTimer = null;
