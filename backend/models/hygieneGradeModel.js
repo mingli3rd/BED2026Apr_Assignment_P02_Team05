@@ -3,9 +3,8 @@ const dbConfig = require("../dbConfig");
 
 // Get a vendor's full hygiene grade history, newest first, directly from the main database.
 async function getGradeHistoryByVendor(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     const result = await request.query(`
@@ -26,14 +25,6 @@ async function getGradeHistoryByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 

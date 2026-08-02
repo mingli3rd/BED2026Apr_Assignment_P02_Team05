@@ -3,8 +3,6 @@ const sql = require("mssql");
 const dotenv = require("dotenv");
 const path = require("path");
 const cookieParser = require("cookie-parser");
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger-output.json");
 
 // Load environment variables
 dotenv.config();
@@ -63,6 +61,10 @@ const notificationController = require("./controllers/notificationController");
 const packagingController = require("./controllers/packagingController");
 const { validatePackagingOption } = require("./middlewares/packagingValidation");
 
+// --- Digital Queue ---
+const queueController = require("./controllers/queueController");
+const { validateQueueJoin } = require("./middlewares/queueValidation");
+
 
 // Create Express app
 const app = express();
@@ -82,16 +84,11 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 // --- Serve uploaded vendor/menu images ---
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// --- API documentation (Swagger UI) ---
-// Regenerate swagger-output.json after adding/changing routes: `npm run docs` (in backend/)
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 // ===================== VENDOR ROUTES =====================
 // uploadBannerImage runs first to parse the multipart form data
 // (text fields + the banner file), process/auto-orient the image, then
 // hand off to validation and the controller
 app.post("/api/auth/vendor/register", ...uploadBannerImage, validateVendorRegister, vendorController.registerVendor);
-app.get("/api/vendor/orders", verifyVendorToken, vendorController.listVendorOrders);
 
 // ===================== PATRON ROUTES =====================
 app.post("/api/auth/patron/register", validatePatronRegister, patronController.registerPatron);
@@ -174,6 +171,27 @@ app.post("/api/vendor/packaging", verifyVendorToken, validatePackagingOption, pa
 app.put("/api/vendor/packaging/:id", verifyVendorToken, validatePackagingOption, packagingController.updateMyOption);
 app.delete("/api/vendor/packaging/:id", verifyVendorToken, packagingController.deleteMyOption);
 app.get("/api/stalls/:vendorId/packaging", packagingController.listPublicOptions); // public — cart/checkout/stall page all read this, no auth
+
+// ===================== DIGITAL QUEUE =====================
+// Customer-facing (guest or patron — attachPatronIfPresent is optional auth,
+// same pattern as complaint submission)
+app.post("/api/queue/join", attachPatronIfPresent, validateQueueJoin, queueController.joinQueue);
+app.get("/api/queue/mine/:vendorId", queueController.getMyStatus);
+app.delete("/api/queue/:entryId", queueController.cancelEntry);
+app.get("/api/stalls/:vendorId/queue-status", queueController.getPublicStatus); // public — stall page checks this before showing "Join Queue"
+app.get("/api/queue/mine-all", queueController.getMyActiveEntries); // public — powers the site-wide "My Queue" nav widget
+
+// Vendor-facing
+app.get("/api/vendor/queue", verifyVendorToken, queueController.getMyQueue);
+app.post("/api/vendor/queue/enable", verifyVendorToken, queueController.enableQueue);
+app.post("/api/vendor/queue/call-next", verifyVendorToken, queueController.callNext);
+app.post("/api/vendor/queue/pause", verifyVendorToken, queueController.setPaused);
+app.post("/api/vendor/queue/open", verifyVendorToken, queueController.setOpen);
+
+// Customer-facing notifications (patron or guest — used by the stall page
+// to poll for "your turn is near" alerts pushed by queueModel.callNext)
+app.get("/api/notifications/mine", notificationController.getMyCustomerNotifications);
+app.put("/api/notifications/mine/:id/read", notificationController.markCustomerNotificationAsRead);
 
 // Start server
 app.listen(port, () => {

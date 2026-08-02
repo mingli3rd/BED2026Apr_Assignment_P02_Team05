@@ -1,13 +1,11 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
-// Total revenue and order count for a vendor, plus a 7-day daily sales trend
 // Total revenue and order count for a vendor, plus a daily sales trend
 // over the last `days` days (default 7)
 async function getSalesSummary(vendorId, days = 7) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
 
@@ -69,22 +67,13 @@ async function getSalesSummary(vendorId, days = 7) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Top-selling menu items by quantity sold, for a vendor
 async function getTopSellingItems(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
 
@@ -105,22 +94,13 @@ async function getTopSellingItems(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Average rating and rating distribution (count of 1-star, 2-star, etc.) for a vendor
 async function getFeedbackSummary(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
 
@@ -170,22 +150,13 @@ async function getFeedbackSummary(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Complaint counts by status, plus the most recent complaints
 async function getComplaintsSummary(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
 
@@ -214,14 +185,6 @@ async function getComplaintsSummary(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 

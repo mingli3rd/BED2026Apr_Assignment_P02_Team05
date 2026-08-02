@@ -1,0 +1,73 @@
+/* =========================================================
+   Digital Queue — vendor management page
+   Reuses the site's real design tokens (--teal-shadow, --mustard,
+   --font-mono, --font-display) rather than guessing at a palette.
+   ========================================================= */
+
+.queue-now-serving-board {
+  background-color: var(--teal-shadow);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 28px 24px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.queue-now-serving-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.queue-now-serving-number {
+  font-family: var(--font-display);
+  font-size: 56px;
+  color: var(--mustard);
+  line-height: 1;
+}
+
+.queue-badges {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.queue-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+
+.queue-badge-open {
+  background-color: rgba(31, 122, 77, 0.18);
+  color: #4fbf8c;
+}
+
+.queue-badge-closed {
+  background-color: rgba(214, 73, 51, 0.18);
+  color: var(--stool-red);
+}
+
+.queue-badge-paused {
+  background-color: rgba(232, 163, 61, 0.18);
+  color: var(--mustard);
+}
+
+.queue-not-setup {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.queue-not-setup p {
+  color: var(--muted);
+  max-width: 42ch;
+  margin: 0 auto 20px;
+}

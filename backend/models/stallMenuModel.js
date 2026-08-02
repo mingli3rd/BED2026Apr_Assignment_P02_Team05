@@ -4,9 +4,8 @@ const dbConfig = require("../dbConfig");
 // List all approved vendors (for the stall picker on the browse page).
 // Optionally filtered by hawker_centre_id or location, for the location filter.
 async function getApprovedVendors(hawkerCentreId, location, search) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
 
     let query = `
@@ -44,10 +43,6 @@ async function getApprovedVendors(hawkerCentreId, location, search) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
@@ -55,9 +50,8 @@ async function getApprovedVendors(hawkerCentreId, location, search) {
 // approved stalls are currently at each — this powers the "Find a Stall"
 // directory's search results.
 async function searchHawkerCentres(search, location) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
 
     let query = `
@@ -89,19 +83,14 @@ async function searchHawkerCentres(search, location) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get a single hawker centre's info (for the header of the "stalls in this
 // centre" page)
 async function getHawkerCentreById(hawkerCentreId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, hawkerCentreId);
     const result = await request.query(`
@@ -111,18 +100,13 @@ async function getHawkerCentreById(hawkerCentreId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // List all hawker centres (for populating the location filter dropdown)
 async function getHawkerCentres() {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const result = await connection.request().query(`
       SELECT id, name, location, cover_image FROM HawkerCentres ORDER BY location, name
     `);
@@ -130,18 +114,13 @@ async function getHawkerCentres() {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get a vendor's basic info (for the stall page header)
 async function getVendorInfo(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     const result = await request.query(`
@@ -158,18 +137,13 @@ async function getVendorInfo(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get a vendor's active menu items, each with its available add-ons nested in
 async function getActiveMenuByVendor(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
 
@@ -202,10 +176,6 @@ async function getActiveMenuByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
