@@ -3,6 +3,8 @@ const sql = require("mssql");
 const dotenv = require("dotenv");
 const path = require("path");
 const cookieParser = require("cookie-parser");
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger-output.json");
 
 // Load environment variables
 dotenv.config();
@@ -86,6 +88,9 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 
 // --- Serve uploaded vendor/menu images ---
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // ===================== VENDOR ROUTES =====================
 // uploadBannerImage runs first to parse the multipart form data
