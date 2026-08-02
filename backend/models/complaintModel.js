@@ -4,9 +4,8 @@ const dbConfig = require("../dbConfig");
 // Create a new complaint against a vendor. patronId is null for guest complaints
 // (Complaints.patron_id is nullable in the schema for exactly this reason).
 async function createComplaint(vendorId, patronId, description) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     request.input("patron_id", sql.Int, patronId || null);
@@ -21,18 +20,13 @@ async function createComplaint(vendorId, patronId, description) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // List complaints lodged against a vendor's stall, newest first (vendor dashboard use)
 async function getComplaintsByVendor(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     const result = await request.query(`
@@ -46,19 +40,14 @@ async function getComplaintsByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Update a complaint's status. Scoped to vendor_id so a vendor can only
 // ever update complaints filed against their own stall.
 async function updateComplaintStatus(complaintId, vendorId, status) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, complaintId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -72,10 +61,6 @@ async function updateComplaintStatus(complaintId, vendorId, status) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 

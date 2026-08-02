@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Credits — SG Hawker Hub</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      color: #222;
+    }
+    h1 { margin-bottom: 4px; }
+    h2 {
+      margin-top: 32px;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 4px;
+    }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 10px; }
+    a { color: #0645ad; }
+    code {
+      background: #f0f0f0;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .note { color: #666; font-size: 0.95em; }
+  </style>
+</head>
+<body>
+
+  <h1>Credits &amp; Sources</h1>
+  <p class="note">Fonts, libraries, and external media used throughout this project.</p>
+
+  <h2>Fonts</h2>
+  <ul>
+    <li><strong>Google Fonts</strong> — Anton, IBM Plex Sans, and IBM Plex Mono, used under the SIL Open Font License. <a href="https://fonts.google.com" target="_blank" rel="noopener noreferrer">fonts.google.com</a></li>
+  </ul>
+
+  <h2>Backend &amp; Database</h2>
+  <ul>
+    <li><strong>Node.js &amp; Express</strong> — server runtime and web framework used to build the RESTful API. <a href="https://expressjs.com" target="_blank" rel="noopener noreferrer">expressjs.com</a></li>
+    <li><strong>Microsoft SQL Server</strong> — relational database, accessed via the <code>mssql</code> Node.js driver. <a href="https://www.npmjs.com/package/mssql" target="_blank" rel="noopener noreferrer">npmjs.com/package/mssql</a></li>
+    <li><strong>dotenv</strong> — loads configuration and secrets from <code>.env</code> files. <a href="https://www.npmjs.com/package/dotenv" target="_blank" rel="noopener noreferrer">npmjs.com/package/dotenv</a></li>
+  </ul>
+
+  <h2>Validation &amp; Security</h2>
+  <ul>
+    <li><strong>Joi</strong> — schema validation for incoming request bodies. <a href="https://joi.dev" target="_blank" rel="noopener noreferrer">joi.dev</a></li>
+    <li><strong>bcrypt</strong> — hashes user passwords before storage. <a href="https://www.npmjs.com/package/bcrypt" target="_blank" rel="noopener noreferrer">npmjs.com/package/bcrypt</a></li>
+    <li><strong>jsonwebtoken</strong> — issues JWT session tokens for login authentication. <a href="https://www.npmjs.com/package/jsonwebtoken" target="_blank" rel="noopener noreferrer">npmjs.com/package/jsonwebtoken</a></li>
+    <li><strong>cookie-parser</strong> — reads the JWT auth cookie. <a href="https://www.npmjs.com/package/cookie-parser" target="_blank" rel="noopener noreferrer">npmjs.com/package/cookie-parser</a></li>
+    <li><strong>cors</strong> — enables the main site to safely call the separate NEA service across origins. <a href="https://www.npmjs.com/package/cors" target="_blank" rel="noopener noreferrer">npmjs.com/package/cors</a></li>
+  </ul>
+
+  <h2>Image Upload &amp; Charts</h2>
+  <ul>
+    <li><strong>multer</strong> — parses multipart image uploads. <a href="https://www.npmjs.com/package/multer" target="_blank" rel="noopener noreferrer">npmjs.com/package/multer</a></li>
+    <li><strong>sharp</strong> — auto-rotates, resizes, and compresses uploaded photos server-side. <a href="https://sharp.pixelplumbing.com" target="_blank" rel="noopener noreferrer">sharp.pixelplumbing.com</a></li>
+    <li><strong>Chart.js</strong> — renders the sales and rating charts on the vendor Performance dashboard. <a href="https://www.chartjs.org" target="_blank" rel="noopener noreferrer">chartjs.org</a></li>
+  </ul>
+
+  <h2>Images &amp; Media</h2>
+  <ul>
+    <li><strong>Stall &amp; Hawker Centre Photos</strong> — <span class="note">Pictures from google images taken for hawker centres.</span></li>
+  </ul>
+
+
+</body>
+</html>

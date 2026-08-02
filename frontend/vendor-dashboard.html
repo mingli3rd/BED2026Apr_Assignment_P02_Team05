@@ -28,7 +28,7 @@
         <a href="menu.html" class="dash-nav-link">
           <span class="stall-no">02</span> Menu
         </a>
-        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+        <a href="vendor-orders.html" class="dash-nav-link">
           <span class="stall-no">03</span> Orders
         </a>
         <a href="rental-agreements.html" class="dash-nav-link">
@@ -38,7 +38,7 @@
         <a href="hygiene-history.html" class="dash-nav-link">
           <span class="stall-no">05</span> Hygiene Grades
         </a>
-        <a href="#" class="dash-nav-link is-disabled" title="Coming soon">
+        <a href="stall-profile.html" class="dash-nav-link">
           <span class="stall-no">06</span> Stall Profile
         </a>
         <a href="stall-performance.html" class="dash-nav-link">
@@ -46,6 +46,9 @@
         </a>
         <a href="packaging.html" class="dash-nav-link">
           <span class="stall-no">08</span> Packaging
+        </a>
+        <a href="queue.html" class="dash-nav-link">
+          <span class="stall-no">09</span> Queue
         </a>
       </nav>
 
@@ -80,6 +83,11 @@
                 <div class="notif-bell-panel-header">
                   <span>Notifications</span>
                   <button id="notifMarkAllBtn" class="notif-mark-all-btn">Mark all read</button>
+                </div>
+                <div class="dash-filter-group" id="notifFilterRow" style="padding: 10px 14px; border-bottom: 1px solid var(--line);">
+                  <button type="button" class="dash-filter-btn is-active" data-notif-filter="all">All</button>
+                  <button type="button" class="dash-filter-btn" data-notif-filter="new_order">Orders</button>
+                  <button type="button" class="dash-filter-btn" data-notif-filter="complaint">Complaints</button>
                 </div>
                 <div id="notifBellList" class="notif-bell-list">
                   <p class="notif-bell-empty">Loading...</p>

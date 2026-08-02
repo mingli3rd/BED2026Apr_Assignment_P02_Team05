@@ -75,6 +75,21 @@ function resolvePackaging(items, requestedOptionId, packagingOption) {
   };
 }
 
+// Inserts directly using the connection already in use in createOrdersFromCart,
+// rather than calling notificationModel.createNotification() separately —
+// keeps everything for one checkout on one connection, one request at a time.
+async function pushOrderNotification(connection, vendorId, orderId, message) {
+  const request = connection.request();
+  request.input("vendor_id", sql.Int, vendorId);
+  request.input("type", sql.VarChar, "new_order");
+  request.input("reference_id", sql.Int, orderId);
+  request.input("message", sql.VarChar, message);
+  await request.query(`
+    INSERT INTO Notifications (vendor_id, type, reference_id, message)
+    VALUES (@vendor_id, @type, @reference_id, @message)
+  `);
+}
+
 // Creates one Order (+ OrderItems + OrderItemAddOns) per vendor group,
 // after a successful mock payment. patronId may be null for guest checkout.
 // vendorOptions is keyed by vendor_id: { [vendor_id]: { packaging_type, special_request } }
@@ -90,9 +105,8 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
   const groups = groupCartByVendor(cartItems);
   const createdOrders = [];
 
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
 
     for (const vendorId of Object.keys(groups)) {
       const items = groups[vendorId];
@@ -178,6 +192,13 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
         }
       }
 
+      // Push a real-time notification to the vendor as soon as their order lands
+      const itemsSummary = items.map((item) => `${item.quantity}x ${item.name}`).join(", ");
+      const orderMessage = specialRequest
+        ? `New order #${orderId}: ${itemsSummary} — Note: "${specialRequest}"`
+        : `New order #${orderId}: ${itemsSummary}`;
+      await pushOrderNotification(connection, vendorId, orderId, orderMessage);
+
       createdOrders.push({
         order_id: orderId,
         vendor_name: vendorName,
@@ -195,10 +216,6 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
@@ -209,9 +226,8 @@ async function createOrdersFromCart(patronId, cartItems, paymentMethod, forceFai
 // worth flagging: this is NOT the same security guarantee as a logged-in
 // patron's order history, which is scoped to their own patron_id.
 async function getOrdersByIds(orderIds) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
 
     // Build a parameterised IN clause safely (no string concatenation of user input)
@@ -249,10 +265,6 @@ async function getOrdersByIds(orderIds) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 

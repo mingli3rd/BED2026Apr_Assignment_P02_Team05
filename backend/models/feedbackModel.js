@@ -3,9 +3,8 @@ const dbConfig = require("../dbConfig");
 
 // Create a new feedback entry (rating + optional comment) for a vendor
 async function createFeedback(patronId, vendorId, rating, comment) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -21,19 +20,14 @@ async function createFeedback(patronId, vendorId, rating, comment) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get every vendor this patron has actually ordered from (so the feedback
 // page only offers to review stalls they've genuinely eaten at)
 async function getOrderedVendorsByPatron(patronId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     const result = await request.query(`
@@ -47,18 +41,13 @@ async function getOrderedVendorsByPatron(patronId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get all feedback this patron has submitted, newest first
 async function getFeedbackByPatron(patronId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     const result = await request.query(`
@@ -72,10 +61,6 @@ async function getFeedbackByPatron(patronId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 

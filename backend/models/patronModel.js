@@ -3,9 +3,8 @@ const dbConfig = require("../dbConfig");
 
 // Check if an email is already registered
 async function findUserByEmail(email) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = "SELECT id, email FROM Patrons WHERE email = @email";
     const request = connection.request();
     request.input("email", sql.VarChar, email);
@@ -19,22 +18,13 @@ async function findUserByEmail(email) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Create new patron account
 async function createPatron(patronData) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = `
       INSERT INTO Patrons (name, email, phone, password_hash, role)
       VALUES (@name, @email, @phone, @password_hash, @role);
@@ -54,22 +44,13 @@ async function createPatron(patronData) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get patron by ID (used to return the created record without the password hash)
 async function getPatronById(id) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = `
       SELECT id, name, email, phone, role, created_at
       FROM Patrons
@@ -87,22 +68,13 @@ async function getPatronById(id) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get full patron record by email, including password_hash, for login authentication
 async function getPatronAuthByEmail(email) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const query = `
       SELECT id, name, email, password_hash, role
       FROM Patrons
@@ -120,23 +92,14 @@ async function getPatronAuthByEmail(email) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 
 // Get order history for a patron, with item names and vendor (stall) name
 // resolved, newest first — used for the "My Orders" page.
-async function  getOrdersByPatron(patronId) {
-  let connection;
+async function getOrdersByPatron(patronId) {
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
 
@@ -166,14 +129,6 @@ async function  getOrdersByPatron(patronId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
-    }
   }
 }
 

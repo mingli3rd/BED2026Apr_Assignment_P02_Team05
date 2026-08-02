@@ -69,6 +69,7 @@ const VENDOR_ALLOWED_PAGES = new Set([
   "packaging.html",
   "menu.html",
   "hygiene-history.html",
+  "queue.html",
 ]);
 
 function getCurrentPageName() {
@@ -195,8 +196,144 @@ function addGuestTrackOrdersLink() {
   }
 }
 
+// =========================================================
+// SITE-WIDE "MY QUEUE" NAV WIDGET
+//
+// Shows every digital queue ticket this browser/patron currently holds,
+// across ALL stalls, from anywhere on the site — not just the stall page
+// itself. Works for guests (identified by the same guest_identifier
+// stall-menu.js generates/stores) and logged-in patrons (identified by
+// their patron id from the session check above). Never shown for vendors,
+// since they run stalls rather than queue at them.
+// =========================================================
+
+const NAV_QUEUE_GUEST_STORAGE_KEY = "hawkerhub_queue_guest_id"; // must match stall-menu.js's key exactly — kept as a differently-named constant here since classic <script> files share one global scope, and stall-menu.js already declares its own QUEUE_GUEST_KEY with this same value
+let queueNavPollTimer = null;
+
+function getStoredQueueGuestId() {
+  return localStorage.getItem(NAV_QUEUE_GUEST_STORAGE_KEY);
+}
+
+function renderQueueNavList(entries, patronId, guestId) {
+  const listEl = document.getElementById("queueNavList");
+  if (!listEl) return;
+
+  if (entries.length === 0) {
+    listEl.innerHTML = `<p style="padding:14px 12px; font-size:13px; color:var(--muted); margin:0;">You're not in any queues right now.</p>`;
+    return;
+  }
+
+  listEl.innerHTML = entries
+    .map((entry) => {
+      const statusText = entry.status === "called" ? "It's your turn!" : `${entry.people_ahead} ahead of you`;
+      return `
+        <div class="queue-nav-entry" data-vendor-id="${entry.vendor_id}" style="padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+            <strong style="font-size:13.5px;">${entry.vendor_name}</strong>
+            <span class="mono" style="font-size:12px; color:var(--mustard);">#${entry.queue_number}</span>
+          </div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">${statusText} · Now serving #${entry.now_serving ?? "--"}</div>
+          <button type="button" class="dash-link-btn dash-link-btn-danger" data-leave-entry="${entry.id}" style="margin-top:6px; font-size:11.5px;">Leave Queue</button>
+        </div>
+      `;
+    })
+    .join("");
+
+  // Clicking anywhere on a ticket (besides the Leave Queue button) jumps to
+  // that stall's page. The button's own click handler below calls
+  // stopPropagation, so leaving the queue never accidentally triggers this.
+  listEl.querySelectorAll(".queue-nav-entry").forEach((entryEl) => {
+    entryEl.addEventListener("click", () => {
+      window.location.href = `stall-menu.html?vendor_id=${entryEl.dataset.vendorId}`;
+    });
+  });
+
+  listEl.querySelectorAll("[data-leave-entry]").forEach((btn) => {
+    btn.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const body = patronId ? { patron_id: patronId } : { guest_identifier: guestId };
+      try {
+        await fetch(`${navApiBaseUrl}/api/queue/${btn.dataset.leaveEntry}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        refreshQueueNavWidget(patronId, guestId);
+      } catch (error) {
+        console.error("Error leaving queue:", error);
+      }
+    });
+  });
+}
+
+async function refreshQueueNavWidget(patronId, guestId) {
+  if (!patronId && !guestId) return;
+  const widget = document.getElementById("queueNavWidget");
+  if (!widget) return;
+
+  const params = patronId ? `patron_id=${patronId}` : `guest_identifier=${guestId}`;
+  try {
+    const response = await fetch(`${navApiBaseUrl}/api/queue/mine-all?${params}`);
+    if (response.status !== 200) return;
+    const entries = await response.json();
+
+    const countEl = document.getElementById("queueNavCount");
+    widget.style.display = entries.length === 0 ? "none" : "inline-flex";
+    if (countEl) countEl.textContent = entries.length;
+
+    renderQueueNavList(entries, patronId, guestId);
+  } catch (error) {
+    console.error("Error checking queue tickets:", error);
+  }
+}
+
+// Injects the "My Queue" dropdown into the nav for guests and patrons.
+// Hidden entirely until we know there's at least one active ticket to show.
+function addQueueNavWidget(role, patronId) {
+  if (!boardAuth || role === "vendor") return; // vendors don't queue at their own stall
+
+  const guestId = role === "guest" ? getStoredQueueGuestId() : null;
+  if (!patronId && !guestId) return; // never joined a queue on this browser/account — nothing to check yet
+
+  if (document.getElementById("queueNavWidget")) return; // already injected
+
+  const widget = document.createElement("div");
+  widget.className = "auth-dropdown";
+  widget.id = "queueNavWidget";
+  widget.style.display = "none";
+  widget.innerHTML = `
+    <button type="button" class="auth-dropdown-toggle">
+      🔔 My Queue
+      <span id="queueNavCount" style="background:var(--stool-red); color:var(--chalk); font-family:var(--font-mono); font-size:10px; font-weight:700; border-radius:100px; padding:1px 6px;">0</span>
+      <span class="chevron">▾</span>
+    </button>
+    <div class="auth-dropdown-menu" id="queueNavList" style="min-width:250px; max-height:320px; overflow-y:auto; padding:0;"></div>
+  `;
+
+  const cartIcon = document.getElementById("cartIconLink");
+  if (cartIcon) {
+    boardAuth.insertBefore(widget, cartIcon);
+  } else {
+    boardAuth.appendChild(widget);
+  }
+
+  // Reuses the exact same open/close pattern as the Sign Up / Log In
+  // dropdowns above (including the document-wide "click outside closes it"
+  // handler already registered at the top of this file).
+  widget.querySelector(".auth-dropdown-toggle").addEventListener("click", (event) => {
+    event.stopPropagation();
+    const wasOpen = widget.classList.contains("is-open");
+    document.querySelectorAll(".auth-dropdown.is-open").forEach((d) => d.classList.remove("is-open"));
+    if (!wasOpen) widget.classList.add("is-open");
+  });
+
+  refreshQueueNavWidget(patronId, guestId);
+  if (queueNavPollTimer) clearInterval(queueNavPollTimer);
+  queueNavPollTimer = setInterval(() => refreshQueueNavWidget(patronId, guestId), 10000);
+}
+
 async function applySessionAwareNav() {
-  const { role } = await getCurrentSessionRole();
+  const { role, user } = await getCurrentSessionRole();
 
   if (role === "vendor") {
     if (!VENDOR_ALLOWED_PAGES.has(getCurrentPageName())) {
@@ -238,6 +375,8 @@ async function applySessionAwareNav() {
     // but still surface a way back to their order tracking if they have any
     addGuestTrackOrdersLink();
   }
+
+  addQueueNavWidget(role, role === "patron" ? user?.id : null);
 }
 
 applySessionAwareNav();

@@ -36,10 +36,17 @@ function applyGradeFilter() {
     ? allStalls.filter((stall) => stall.grade === activeGradeFilter)
     : allStalls;
 
+<<<<<<< HEAD
   if (activeRatingSort === "asc") {
     filtered = [...filtered].sort((a, b) => Number(a.avg_rating) - Number(b.avg_rating));
   } else if (activeRatingSort === "desc") {
     filtered = [...filtered].sort((a, b) => Number(b.avg_rating) - Number(a.avg_rating));
+=======
+  if (activeRatingSort) {
+    filtered = [...filtered].sort((a, b) =>
+      activeRatingSort === "desc" ? b.avg_rating - a.avg_rating : a.avg_rating - b.avg_rating
+    );
+>>>>>>> 4d2fccf9c1ad7ac10d08a884d163c9e5cde1f04f
   }
 
   renderStallCards(filtered);
@@ -62,7 +69,11 @@ createFilterDropdown(
 );
 
 createFilterDropdown(
+<<<<<<< HEAD
   "ratingSort",
+=======
+  "ratingSortFilter",
+>>>>>>> 4d2fccf9c1ad7ac10d08a884d163c9e5cde1f04f
   [
     { value: "", label: "Sort by Rating" },
     { value: "desc", label: "Rating: High to Low" },
@@ -105,7 +116,11 @@ function renderStallCards(stalls) {
             ${stall.grade ? `<span class="grade-badge ${gradeClass(stall.grade)}">${stall.grade}</span>` : ""}
           </div>
           <h3>${stall.business_name}</h3>
+<<<<<<< HEAD
           <p class="mono muted" style="font-size:12.5px; margin: 4px 0 0;">${ratingText}</p>
+=======
+          <p class="mono muted">${stall.review_count > 0 ? `★ ${Number(stall.avg_rating).toFixed(1)} (${stall.review_count} review${stall.review_count === 1 ? "" : "s"})` : "No reviews yet"}</p>
+>>>>>>> 4d2fccf9c1ad7ac10d08a884d163c9e5cde1f04f
           <span class="directory-card-link">Order Now →</span>
         </a>
       `;

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/complaint-form.css" />
   <link rel="stylesheet" href="css/eco-packaging.css" />
+  <link rel="stylesheet" href="css/queue.css" />
 </head>
 <body>
 
@@ -24,7 +25,6 @@
         <a href="index.html" class="board-link"><span class="stall-no">01</span>Home</a>
         <a href="stalls.html" class="board-link is-active"><span class="stall-no">02</span>Order</a>
         <a href="feedback.html" class="board-link"><span class="stall-no">03</span>Feedback</a>
-        <a href="credit.html" class="board-link"><span class="stall-no">04</span>Credits</a>
       </nav>
 
       <div class="board-auth" id="boardAuth">
@@ -71,6 +71,21 @@
           <p class="mono muted" id="stallRating" style="margin: 6px 0 0;"></p>
           <button type="button" id="reportIssueBtn" class="btn btn-ghost btn-small report-issue-btn">⚑ Report an Issue</button>
         </div>
+      </div>
+
+      <!-- Digital Queue: join panel. This is the only queue UI on this
+           page now — once joined, ongoing status (number, position, now
+           serving, leave) lives in the site-wide "My Queue" nav widget
+           instead, so there's no duplicate ticket display to keep in sync
+           here. -->
+      <div id="queueJoinPanel" class="dash-panel" style="display:none;">
+        <div class="dash-panel-header">
+          <h2>Skip the Line</h2>
+          <span id="queueStatusBadge" class="queue-badge" style="display:none;"></span>
+        </div>
+        <p class="muted" id="queueIntroText">Join the digital queue for this stall and we'll let you know when it's nearly your turn.</p>
+        <button type="button" id="joinQueueBtn" class="btn btn-primary">Join Queue</button>
+        <p class="muted" id="joinQueueFlash" style="display:none; margin-top:12px; color: var(--mustard); font-weight:600;"></p>
       </div>
 
       <!-- Search within this stall's menu -->
@@ -157,7 +172,6 @@
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="index.html">Home</a>
         <a href="feedback.html">Feedback</a>
-        <a href="credit.html">Credits</a>
       </nav>
       <p class="footer-note">Built for BED Assignment · Diploma in Information Technology · Ngee Ann Polytechnic</p>
     </div>

@@ -5,9 +5,8 @@ const dbConfig = require("../dbConfig");
 // by the vendor's own management page, where they need to see and re-enable
 // something they'd previously turned off.
 async function getOptionsByVendor(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     const result = await request.query(`
@@ -20,19 +19,14 @@ async function getOptionsByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Public: only the currently-enabled options for a vendor — this is what
 // customers pick from on the stall page, cart, and checkout.
 async function getEnabledOptionsByVendor(vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     const result = await request.query(`
@@ -45,10 +39,6 @@ async function getEnabledOptionsByVendor(vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
@@ -56,9 +46,8 @@ async function getEnabledOptionsByVendor(vendorId) {
 // vendor and is still enabled, and to get its current surcharge/description
 // (in case the vendor changed it since the customer loaded the cart page).
 async function getEnabledOptionById(optionId, vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, optionId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -71,18 +60,13 @@ async function getEnabledOptionById(optionId, vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Create a new packaging option for a vendor
 async function createOption(vendorId, { description, surcharge, is_enabled }) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("vendor_id", sql.Int, vendorId);
     request.input("description", sql.VarChar, description.trim());
@@ -98,19 +82,14 @@ async function createOption(vendorId, { description, surcharge, is_enabled }) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Update an existing option. Scoped to vendor_id so a vendor can never
 // edit another stall's packaging options even by guessing an id.
 async function updateOption(optionId, vendorId, { description, surcharge, is_enabled }) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, optionId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -128,10 +107,6 @@ async function updateOption(optionId, vendorId, { description, surcharge, is_ena
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
@@ -140,9 +115,8 @@ async function updateOption(optionId, vendorId, { description, surcharge, is_ena
 // Orders.packaging_option_id (FK_Orders_PackagingOption), so removing the
 // row outright would break historical order data.
 async function disableOption(optionId, vendorId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, optionId);
     request.input("vendor_id", sql.Int, vendorId);
@@ -156,10 +130,6 @@ async function disableOption(optionId, vendorId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 

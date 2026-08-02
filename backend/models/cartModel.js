@@ -1,11 +1,19 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
+// NOTE ON CONNECTIONS: sql.connect(dbConfig) returns ONE shared, app-wide
+// connection pool — every model file gets back the same instance, not a
+// private connection of its own. Calling connection.close() here (as this
+// file used to) tears down that shared pool for the ENTIRE app, not just
+// this function's own query — so any other request still mid-query at
+// that moment fails with a "Connection is closed"/aborted error. The pool
+// should simply stay open for the app's lifetime; it's already closed
+// exactly once, correctly, in app.js's SIGINT handler on shutdown.
+
 // Add an item to a patron's persisted cart, along with any selected add-ons
 async function addToCart(patronId, { menu_item_id, vendor_id, quantity, add_on_ids }) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
 
     const insertRequest = connection.request();
     insertRequest.input("patron_id", sql.Int, patronId);
@@ -35,19 +43,14 @@ async function addToCart(patronId, { menu_item_id, vendor_id, quantity, add_on_i
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Get a patron's full persisted cart (mainly used for future "load my cart on
 // another device" support — the site's own UI relies on localStorage today)
 async function getCartByPatron(patronId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     const result = await request.query(`
@@ -61,18 +64,13 @@ async function getCartByPatron(patronId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Update the quantity of a cart item (only if it belongs to this patron)
 async function updateQuantity(cartItemId, patronId, quantity) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, cartItemId);
     request.input("patron_id", sql.Int, patronId);
@@ -83,18 +81,13 @@ async function updateQuantity(cartItemId, patronId, quantity) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Remove a single item from the cart (only if it belongs to this patron)
 async function removeCartItem(cartItemId, patronId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("id", sql.Int, cartItemId);
     request.input("patron_id", sql.Int, patronId);
@@ -104,28 +97,19 @@ async function removeCartItem(cartItemId, patronId) {
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
 // Clear a patron's entire cart (called after successful checkout)
 async function clearCart(patronId) {
-  let connection;
   try {
-    connection = await sql.connect(dbConfig);
+    const connection = await sql.connect(dbConfig);
     const request = connection.request();
     request.input("patron_id", sql.Int, patronId);
     await request.query(`DELETE FROM CartItems WHERE patron_id = @patron_id`);
   } catch (error) {
     console.error("Database error:", error);
     throw error;
-  } finally {
-    if (connection) {
-      try { await connection.close(); } catch (err) { console.error("Error closing connection:", err); }
-    }
   }
 }
 
