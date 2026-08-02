@@ -2,7 +2,27 @@ const vendorRegisterForm = document.getElementById("vendorRegisterForm");
 const messageDiv = document.getElementById("message");
 const submitBtn = document.getElementById("submitBtn");
 const permitStatus = document.getElementById("permitStatus");
+const hawkerCentreSelect = document.getElementById("hawkerCentreId");
 const apiBaseUrl = "http://localhost:3000";
+
+// Populate the hawker centre dropdown from the live list instead of a
+// hardcoded set of options, so newly added centres show up automatically
+(async function loadHawkerCentres() {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/hawker-centres`);
+    if (response.status !== 200) return;
+
+    const centres = await response.json();
+    centres.forEach((centre) => {
+      const option = document.createElement("option");
+      option.value = centre.id;
+      option.textContent = centre.name;
+      hawkerCentreSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error loading hawker centres:", error);
+  }
+})();
 
 // If a vendor is already logged in, registering again makes no sense —
 // send them straight to their dashboard instead.
